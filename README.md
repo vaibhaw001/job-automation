@@ -129,8 +129,8 @@ MIT License - feel free to use and modify!
 
 ## 👤 Author
 
-**Vivek Upadhyay**  
-LinkedIn: https://www.linkedin.com/in/vivek-upadhyay-6689b4184/
+**Vaibhaw Upadhyay**  
+LinkedIn: https://www.linkedin.com/in/vaibhaw-upadhyay-8aa4b31aa//
 
 ---
 
