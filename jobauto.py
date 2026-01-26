@@ -13,6 +13,13 @@ from email.message import EmailMessage
 from dotenv import load_dotenv
 import streamlit.components.v1 as components
 
+# PDF reading for resume
+try:
+    import PyPDF2
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -61,8 +68,8 @@ Create one here:
 - Sender credentials are **not stored** and remain session-based only.  
 - Duplicate emails are automatically **blocked** using the Google Sheet.
 
-**Author:** Vivek Upadhyay  
-**LinkedIn:** https://www.linkedin.com/in/vivek-upadhyay-6689b4184/
+**Author:** Vaibhaw Upadhyay  
+**LinkedIn:** https://www.linkedin.com/in/vaibhaw-upadhyay-8aa4b31aa/
 """)
 st.markdown("---")
 
@@ -147,8 +154,25 @@ st.subheader("📎 Upload Your Resume")
 uploaded_resume = st.file_uploader(
     "Upload your resume (PDF only)", type=["pdf"]
 )
+
+# Extract resume text for matching
+if "resume_text" not in st.session_state:
+    st.session_state["resume_text"] = ""
+
 if uploaded_resume:
     st.success(f"✅ Resume uploaded: {uploaded_resume.name}")
+    
+    # Extract text from PDF
+    if PDF_AVAILABLE and not st.session_state["resume_text"]:
+        try:
+            uploaded_resume.seek(0)
+            pdf_reader = PyPDF2.PdfReader(uploaded_resume)
+            text = ""
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+            st.session_state["resume_text"] = text.strip()
+        except:
+            st.session_state["resume_text"] = ""
 
 # =========================
 # DYNAMIC SENDER EMAIL INPUT
@@ -503,11 +527,46 @@ if st.button("Analyze TXT with Gemini", disabled=not can_analyze):
                     "skills": job.get("skills"),
                     "jd_summary": job.get("jd_summary"),
                     "email_subject": job.get("email_subject"),
-                    "email_body_draft": job.get("email_body_draft")
+                    "email_body_draft": job.get("email_body_draft"),
+                    "match_score": 0
                 }
             )
 
         st.session_state["job_df"] = pd.DataFrame(rows)
+        
+        # If resume is uploaded, sort jobs by match score
+        if st.session_state.get("resume_text") and rows:
+            with st.spinner("Ranking jobs based on your resume..."):
+                score_prompt = f"""
+Score each job from 0-100 based on how well it matches this resume.
+
+RESUME:
+{st.session_state["resume_text"][:2500]}
+
+JOBS:
+{json.dumps([{"job_id": r["job_id"], "job_title": r["job_title"], "skills": r["skills"], "jd_summary": r["jd_summary"]} for r in rows], indent=2)[:3000]}
+
+Output JSON only: {{"scores": [{{"job_id": 1, "score": 85}}, ...]}}
+Sort by score descending. Score ALL jobs.
+"""
+                score_response = model.generate_content(score_prompt, generation_config=genai.GenerationConfig(temperature=0))
+                score_text = score_response.text.strip()
+                if score_text.startswith("```"):
+                    score_text = "\n".join(score_text.split("\n")[1:-1])
+                
+                try:
+                    score_result = json.loads(score_text)
+                    scores = {s["job_id"]: s["score"] for s in score_result.get("scores", [])}
+                    
+                    job_df = st.session_state["job_df"]
+                    job_df["match_score"] = job_df["job_id"].map(scores).fillna(0).astype(int)
+                    job_df = job_df.sort_values("match_score", ascending=False).reset_index(drop=True)
+                    # Reassign job_id after sorting (1, 2, 3...)
+                    job_df["job_id"] = range(1, len(job_df) + 1)
+                    st.session_state["job_df"] = job_df
+                    st.success("✅ Jobs sorted by resume match!")
+                except:
+                    pass
 
 # =========================
 # FILTER SENT EMAILS
