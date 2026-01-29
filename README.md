@@ -38,6 +38,7 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 - **Resume attachment**: Send your resume with applications
 - **Application tracking**: Logs all sent emails in a CSV file
 - **Duplicate prevention**: Blocks repeated applications
+- **Multi-format resume support**: Upload resumes in any file format (DOCX, DOC, XLSX, PPTX, Images, TXT) and automatically convert to PDF
 
 ---
 
@@ -49,7 +50,7 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 | **Web Framework** | Streamlit 1.25+                          |
 | **AI Integration** | Google Generative AI (Gemini)            |
 | **Chrome Extension** | Manifest V3, JavaScript, HTML/CSS       |
-| **Dependencies** | Pandas, Python-dotenv, PyPDF2           |
+| **Dependencies** | Pandas, Python-dotenv, PyPDF2, python-docx, openpyxl, python-pptx, Pillow, reportlab |
 
 **System Requirements:**
 - Python 3.8+
@@ -108,9 +109,17 @@ streamlit run jobauto.py
 ```
 - Upload the `.txt` file from the Chrome extension
 - Enter your Gmail credentials (for sending emails)
-- Upload your resume (PDF)
+- Upload your resume in any format (PDF, DOCX, XLSX, PPTX, Images, TXT) - it will be automatically converted to PDF
 - Click **Analyze TXT with Gemini** to extract jobs
 - Review and send application emails
+
+### **📄 Supported Resume Formats**
+The resume uploader automatically converts the following formats to PDF:
+- **Documents**: DOCX, DOC, PDF
+- **Spreadsheets**: XLSX, XLS
+- **Presentations**: PPTX, PPT
+- **Images**: PNG, JPG, JPEG, GIF, BMP
+- **Text**: TXT
 
 ---
 
@@ -189,6 +198,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - [ ] Implement email sending queue with retry logic
 - [ ] Add resume parsing for better job matching
 - [ ] Mobile app version (Flutter)
+- [ ] Advanced PDF conversion with better formatting preservation
 
 ### **Known Issues**
 - [ ] Chrome extension may require permissions on first run
