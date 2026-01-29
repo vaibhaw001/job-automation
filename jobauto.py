@@ -344,10 +344,33 @@ if uploaded_resume:
                     for page in pdf_reader.pages:
                         text += page.extract_text() + "\n"
                     st.session_state["resume_text"] = text.strip()
+                
+                # Extract name from resume (usually first line or first few words)
+                if text.strip():
+                    lines = text.strip().split('\n')
+                    # Name is typically the first non-empty line that looks like a name
+                    import re
+                    for line in lines[:10]:  # Check first 10 lines only
+                        cleaned = line.strip()
+                        # Valid name criteria:
+                        # - Not empty, reasonable length (2-40 chars)
+                        # - No numbers, no @, no http, no special chars like |, /, :
+                        # - Contains only letters and spaces (allowing accents)
+                        if (cleaned 
+                            and 2 < len(cleaned) < 40 
+                            and not re.search(r'[0-9@|/:\\#]', cleaned)
+                            and not cleaned.startswith('http')
+                            and re.match(r'^[A-Za-z\s\.\-]+$', cleaned)):
+                            st.session_state["resume_name"] = cleaned
+                            break
             except:
                 st.session_state["resume_text"] = ""
     else:
         st.error("❌ Failed to process resume file")
+
+# Initialize resume_name if not set
+if "resume_name" not in st.session_state:
+    st.session_state["resume_name"] = ""
 
 # =========================
 # DYNAMIC SENDER EMAIL INPUT
@@ -592,6 +615,7 @@ if not gemini_api_key:
 # PROMPT TEMPLATE
 # =========================
 user_sample_email_safe = user_sample_email if user_sample_email.strip() else "Professional email"
+user_name_from_resume = st.session_state.get("resume_name", "")
 
 PROMPT = f"""
 You are a highly skilled AI assistant specialized in analyzing job postings and drafting professional job application emails.
@@ -638,6 +662,7 @@ Rules for `email_body_draft`:
 - Keep paragraphs short and readable
 - Do NOT exaggerate, invent skills, or fabricate experience
 - Ensure proper grammar and professional formatting
+- IMPORTANT: End email with "Yours sincerely," followed by the applicant's name: "{user_name_from_resume if user_name_from_resume else '[Your Name]'}"
 
 Additional instructions:
 - Output JSON ONLY
@@ -809,10 +834,25 @@ if "job_df" in st.session_state:
                 send_missing.append("Recipient email")
             st.warning(f"⚠️ Fill in: {', '.join(send_missing)}")
         
-        if st.button("🚀 Send Email", disabled=not can_send):
+        # Initialize sending state
+        if "is_sending" not in st.session_state:
+            st.session_state["is_sending"] = False
+        
+        # Button text and state based on sending status
+        button_text = "📨 Sending..." if st.session_state["is_sending"] else "🚀 Send Email"
+        button_disabled = not can_send or st.session_state["is_sending"]
+        
+        if st.button(button_text, disabled=button_disabled):
             if email_to in sent_emails:
                 st.error("This email was already sent earlier.")
             else:
+                # Set sending state to true
+                st.session_state["is_sending"] = True
+                st.rerun()
+        
+        # Process email sending when in sending state
+        if st.session_state.get("is_sending") and can_send and email_to not in sent_emails:
+            with st.spinner("📨 Sending email..."):
                 msg = EmailMessage()
                 msg["From"] = sender_email
                 msg["To"] = email_to
@@ -846,8 +886,10 @@ if "job_df" in st.session_state:
                     }
                     append_to_csv(new_row)
 
+                    st.session_state["is_sending"] = False
                     st.success("✅ Email sent & CSV updated")
                     st.rerun()
 
                 except Exception as e:
+                    st.session_state["is_sending"] = False
                     st.error(f"Failed to send email: {e}")
