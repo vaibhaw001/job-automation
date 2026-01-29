@@ -13,12 +13,39 @@ from email.message import EmailMessage
 from dotenv import load_dotenv
 import streamlit.components.v1 as components
 
-# PDF reading for resume
+# PDF reading and conversion for resume
 try:
     import PyPDF2
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
+
+# File conversion libraries
+try:
+    from docx import Document
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+
+try:
+    from openpyxl import load_workbook
+    XLSX_AVAILABLE = True
+except ImportError:
+    XLSX_AVAILABLE = False
+
+try:
+    from pptx import Presentation
+    PPTX_AVAILABLE = True
+except ImportError:
+    PPTX_AVAILABLE = False
+
+try:
+    from PIL import Image
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    IMAGE_PDF_AVAILABLE = True
+except ImportError:
+    IMAGE_PDF_AVAILABLE = False
 
 # Load environment variables from .env file
 load_dotenv()
@@ -152,27 +179,175 @@ def append_to_csv(row_data):
 # =========================
 st.subheader("📎 Upload Your Resume")
 uploaded_resume = st.file_uploader(
-    "Upload your resume (PDF only)", type=["pdf"]
+    "Upload your resume (Any file format - will be converted to PDF)", 
+    type=["pdf", "docx", "doc", "txt", "xlsx", "xls", "pptx", "ppt", "png", "jpg", "jpeg", "gif", "bmp"]
 )
+
+# Function to convert files to PDF
+def convert_to_pdf(uploaded_file):
+    """Convert uploaded file to PDF format"""
+    file_extension = uploaded_file.name.split('.')[-1].lower()
+    temp_pdf_path = f"temp_{uploaded_file.name}.pdf"
+    
+    try:
+        if file_extension == "pdf":
+            # Already PDF, just read and return
+            return uploaded_file, uploaded_file.name
+        
+        elif file_extension in ["docx", "doc"]:
+            # Convert DOCX to PDF
+            if not DOCX_AVAILABLE:
+                st.error("⚠️ DOCX conversion library not available. Please install python-docx.")
+                return None, None
+            
+            uploaded_file.seek(0)
+            doc = Document(uploaded_file)
+            
+            # Convert DOCX to PDF using reportlab
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            from reportlab.lib.utils import mm
+            
+            c = canvas.Canvas(temp_pdf_path, pagesize=letter)
+            y_position = letter[1] - 50
+            
+            for para in doc.paragraphs:
+                if para.text:
+                    c.drawString(50, y_position, para.text[:100])  # Limit line length
+                    y_position -= 20
+                    if y_position < 50:
+                        c.showPage()
+                        y_position = letter[1] - 50
+            
+            c.save()
+            st.session_state["converted_pdf_path"] = temp_pdf_path
+            return temp_pdf_path, f"{uploaded_file.name.split('.')[0]}.pdf"
+        
+        elif file_extension in ["txt"]:
+            # Convert TXT to PDF
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            
+            uploaded_file.seek(0)
+            text_content = uploaded_file.read().decode("utf-8")
+            
+            c = canvas.Canvas(temp_pdf_path, pagesize=letter)
+            y_position = letter[1] - 50
+            
+            for line in text_content.split('\n'):
+                if line:
+                    c.drawString(50, y_position, line[:100])
+                    y_position -= 20
+                    if y_position < 50:
+                        c.showPage()
+                        y_position = letter[1] - 50
+            
+            c.save()
+            st.session_state["converted_pdf_path"] = temp_pdf_path
+            return temp_pdf_path, f"{uploaded_file.name.split('.')[0]}.pdf"
+        
+        elif file_extension in ["xlsx", "xls"]:
+            # Convert XLSX to PDF
+            if not XLSX_AVAILABLE:
+                st.error("⚠️ XLSX conversion library not available. Please install openpyxl.")
+                return None, None
+            
+            uploaded_file.seek(0)
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            
+            # Read Excel data
+            import openpyxl
+            wb = openpyxl.load_workbook(uploaded_file)
+            ws = wb.active
+            
+            c = canvas.Canvas(temp_pdf_path, pagesize=letter)
+            y_position = letter[1] - 50
+            
+            for row in ws.iter_rows(values_only=True):
+                row_text = " | ".join([str(cell) if cell else "" for cell in row])
+                if row_text.strip():
+                    c.drawString(50, y_position, row_text[:100])
+                    y_position -= 20
+                    if y_position < 50:
+                        c.showPage()
+                        y_position = letter[1] - 50
+            
+            c.save()
+            st.session_state["converted_pdf_path"] = temp_pdf_path
+            return temp_pdf_path, f"{uploaded_file.name.split('.')[0]}.pdf"
+        
+        elif file_extension in ["png", "jpg", "jpeg", "gif", "bmp"]:
+            # Convert Image to PDF
+            if not IMAGE_PDF_AVAILABLE:
+                st.error("⚠️ Image conversion library not available. Please install Pillow and reportlab.")
+                return None, None
+            
+            uploaded_file.seek(0)
+            from PIL import Image
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            
+            img = Image.open(uploaded_file)
+            temp_img_path = f"temp_{uploaded_file.name}"
+            img.save(temp_img_path)
+            
+            c = canvas.Canvas(temp_pdf_path, pagesize=letter)
+            c.drawImage(temp_img_path, 50, 200, width=500, height=400)
+            c.save()
+            
+            # Clean up temp image
+            import os
+            if os.path.exists(temp_img_path):
+                os.remove(temp_img_path)
+            
+            st.session_state["converted_pdf_path"] = temp_pdf_path
+            return temp_pdf_path, f"{uploaded_file.name.split('.')[0]}.pdf"
+        
+        else:
+            st.error(f"⚠️ Unsupported file format: .{file_extension}")
+            return None, None
+    
+    except Exception as e:
+        st.error(f"❌ Error converting file: {str(e)}")
+        return None, None
 
 # Extract resume text for matching
 if "resume_text" not in st.session_state:
     st.session_state["resume_text"] = ""
 
 if uploaded_resume:
-    st.success(f"✅ Resume uploaded: {uploaded_resume.name}")
+    st.info(f"📄 Processing: {uploaded_resume.name}")
     
-    # Extract text from PDF
-    if PDF_AVAILABLE and not st.session_state["resume_text"]:
-        try:
-            uploaded_resume.seek(0)
-            pdf_reader = PyPDF2.PdfReader(uploaded_resume)
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
-            st.session_state["resume_text"] = text.strip()
-        except:
-            st.session_state["resume_text"] = ""
+    # Convert to PDF if needed
+    pdf_file, pdf_name = convert_to_pdf(uploaded_resume)
+    
+    if pdf_file:
+        st.success(f"✅ Resume converted and uploaded: {pdf_name}")
+        
+        # Extract text from PDF
+        if PDF_AVAILABLE and not st.session_state["resume_text"]:
+            try:
+                if isinstance(pdf_file, str):
+                    # It's a file path
+                    with open(pdf_file, 'rb') as f:
+                        pdf_reader = PyPDF2.PdfReader(f)
+                        text = ""
+                        for page in pdf_reader.pages:
+                            text += page.extract_text() + "\n"
+                        st.session_state["resume_text"] = text.strip()
+                else:
+                    # It's a file object
+                    pdf_file.seek(0)
+                    pdf_reader = PyPDF2.PdfReader(pdf_file)
+                    text = ""
+                    for page in pdf_reader.pages:
+                        text += page.extract_text() + "\n"
+                    st.session_state["resume_text"] = text.strip()
+            except:
+                st.session_state["resume_text"] = ""
+    else:
+        st.error("❌ Failed to process resume file")
 
 # =========================
 # DYNAMIC SENDER EMAIL INPUT

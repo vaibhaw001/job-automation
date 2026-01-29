@@ -8,3 +8,9 @@ google-auth-oauthlib
 google-auth-httplib2
 google-generativeai
 python-dotenv
+PyPDF2
+python-docx
+openpyxl
+python-pptx
+Pillow
+reportlab
