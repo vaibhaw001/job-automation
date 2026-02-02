@@ -645,6 +645,12 @@ Strict JSON output schema:
       "location": string,
       "skills": string or null,
       "jd_summary": string,         # 1-2 sentences summarizing role, tech stack, and expectations
+      "description": string,        # Important job details formatted as: 
+                                    # 📌 About Company: (brief company info if available)
+                                    # 💼 Key Responsibilities: (main tasks/duties)
+                                    # ✅ Requirements: (qualifications, experience needed)
+                                    # 💰 Compensation: (salary/stipend if mentioned)
+                                    # ⚠️ Important Points: (deadline, work hours, special notes, red flags if any)
       "email_subject": string,      # Clear, professional subject, e.g., "Application for <Job Title> role"
       "email_body_draft": string    # Polished email, max 2 short paragraphs + closing
     }}
@@ -726,6 +732,7 @@ if st.button("Analyze TXT with Gemini", disabled=not can_analyze):
                     "location": job.get("location"),
                     "skills": job.get("skills"),
                     "jd_summary": job.get("jd_summary"),
+                    "description": job.get("description", "No detailed description available."),
                     "email_subject": job.get("email_subject"),
                     "email_body_draft": job.get("email_body_draft"),
                     "match_score": 0
@@ -788,7 +795,34 @@ if "job_df" in st.session_state:
     ].reset_index(drop=True)
 
     st.subheader("✅ Eligible Jobs")
-    st.dataframe(job_df_filtered, use_container_width=True)
+    
+    # Configure column display with expandable description
+    column_config = {
+        "job_id": st.column_config.NumberColumn("ID", width="small"),
+        "job_title": st.column_config.TextColumn("Job Title", width="medium"),
+        "company": st.column_config.TextColumn("Company", width="medium"),
+        "apply_email": st.column_config.TextColumn("Email", width="medium"),
+        "job_type": st.column_config.TextColumn("Type", width="small"),
+        "location": st.column_config.TextColumn("Location", width="small"),
+        "skills": st.column_config.TextColumn("Skills", width="medium"),
+        "jd_summary": st.column_config.TextColumn("Summary", width="medium"),
+        "description": st.column_config.TextColumn(
+            "Description",
+            width="large",
+            help="Click on cell to expand and view full description"
+        ),
+    }
+    
+    # Hide match_score column and add arrow to description
+    display_df = job_df_filtered.drop(columns=["match_score"], errors="ignore").copy()
+    display_df["description"] = "▼ " + display_df["description"].astype(str)
+    
+    st.dataframe(
+        display_df,
+        column_config=column_config,
+        use_container_width=True,
+        hide_index=True
+    )
 
     if job_df_filtered.empty:
         st.warning("No new jobs available to send emails.")
