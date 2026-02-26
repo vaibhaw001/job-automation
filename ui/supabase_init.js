@@ -4,7 +4,7 @@ window.supabaseConfigLoaded = false;
 window.initSupabase = async function () {
     if (window.sbClient) return;
     try {
-        const res = await fetch('http://127.0.0.1:5000/api/config');
+        const res = await fetch('/api/config');
         const data = await res.json();
         if (data.supabase_url && data.supabase_key) {
             window.supabaseUrl = data.supabase_url;
