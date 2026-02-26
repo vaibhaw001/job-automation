@@ -1,22 +1,21 @@
-# 🚀 Job Automation Suite
+# 🚀 RoleMatch AI (Job Automation Suite)
 
-**Automate your job search with AI-powered LinkedIn scraping, intelligent email drafting, and seamless application tracking**
+**Automate your job search with AI-powered job extraction, intelligent email drafting, and seamless application tracking**
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.25%2B-blue.svg)
-![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-v3-green.svg)
+![Flask](https://img.shields.io/badge/Flask-Backend-green.svg)
+![Vanilla JS](https://img.shields.io/badge/Vanilla_JS-Frontend-yellow.svg)
+![Supabase](https://img.shields.io/badge/Supabase-Auth_%26_DB-3ECF8E.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Stars](https://img.shields.io/github/stars/vaibhaw001/job-automation?style=flat)
-![Forks](https://img.shields.io/github/forks/vaibhaw001/job-automation?style=flat)
 
 ---
 
-## ✨ **What is Job Automation Suite?**
+## ✨ **What is RoleMatch AI?**
 
-Job Automation Suite is a **powerful Python-based tool** that combines:
-- A **Chrome extension** to scrape job listings from multiple platforms
-- A **Streamlit web app** with AI-powered email drafting
-- **Automated application tracking** with local CSV storage
+RoleMatch AI is a **powerful automation tool** that combines:
+- A **Chrome Extension** to scrape job listings from multiple platforms
+- A **Modern Web App** with AI-powered email drafting
+- **Automated Application Tracking & Auth** securely stored in the cloud via Supabase
 
 Perfect for job seekers who want to **save hours of manual work** while applying to multiple positions.
 
@@ -29,16 +28,15 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 - **Auto-scrolling & background processing**: Loads more listings automatically
 - **Customizable scan duration**: 30 seconds to 5 minutes
 - **Auto-export**: Downloads scraped data as `.txt` files
-- **Seamless integration**: Auto-opens the Streamlit app after scanning
 
-### **🤖 Streamlit App (RoleMatch AI)**
-- **AI-powered job analysis**: Uses Google Gemini to extract key details
-- **Smart filtering**: Automatically detects valid emails and India-based jobs
-- **Professional email drafting**: Generates polished application emails
-- **Resume attachment**: Send your resume with applications
-- **Application tracking**: Logs all sent emails in a CSV file
-- **Duplicate prevention**: Blocks repeated applications
-- **Multi-format resume support**: Upload resumes in any file format (DOCX, DOC, XLSX, PPTX, Images, TXT) and automatically convert to PDF
+### **🤖 Web App (RoleMatch AI)**
+- **Supabase Authentication**: Secure user login/sign-up and session management natively using Supabase.
+- **Supabase Cloud Database**: Stores your strictly managed sent-email telemetry using Row Level Security (RLS) keeping everyone’s application history private.
+- **AI-powered job analysis**: Uses **OpenRouter** (and Google Gemini fallback) to extract key details and match roles.
+- **Smart filtering**: Automatically detects valid emails and jobs.
+- **Professional email drafting**: Generates polished application emails.
+- **Resume attachment**: Send your resume with applications. Auto-converts images & documents to PDF.
+- **One-click emailing**: Uses backend SMTP to dispatch emails directly to recruiters without opening an email client.
 
 ---
 
@@ -46,25 +44,20 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 
 | Category       | Technologies Used                          |
 |----------------|-------------------------------------------|
-| **Language**   | Python 3.8+                                |
-| **Web Framework** | Streamlit 1.25+                          |
-| **AI Integration** | Google Generative AI (Gemini)            |
+| **Backend**   | Python (Flask)                               |
+| **Frontend** | HTML, CSS, Vanilla JavaScript                    |
+| **Database & Auth** | Supabase (PostgreSQL)            |
+| **AI Integration** | OpenRouter API / Google Gemini            |
 | **Chrome Extension** | Manifest V3, JavaScript, HTML/CSS       |
-| **Dependencies** | Pandas, Python-dotenv, PyPDF2, python-docx, openpyxl, python-pptx, Pillow, reportlab |
 
 **System Requirements:**
 - Python 3.8+
+- Node.js (for `npx supabase-cli` usage optionally)
 - Chrome browser (for extension)
-- Google Gemini API key (free tier available)
 
 ---
 
 ## 📦 **Installation**
-
-### **Prerequisites**
-- Python 3.8+
-- Chrome browser
-- Google account (for Gemini API)
 
 ### **Quick Start**
 
@@ -82,12 +75,14 @@ Perfect for job seekers who want to **save hours of manual work** while applying
    ```
 
 3. **Configure environment variables**
-   Create a `.env` file:
+   Create a `.env` file containing your keys (API & Supabase configurations):
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
+   GOOGLE_SERVICE_ACCOUNT_JSON=rolematch-ai-...json
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_ANON_KEY=your_supabase_anon_jwt_key
    ```
-
-   Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 4. **Install Chrome Extension**
    - Open Chrome and go to `chrome://extensions/`
@@ -99,120 +94,58 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 ## 🎯 **Usage**
 
 ### **1. Scrape Job Listings**
-- Open the Chrome extension and select a platform (LinkedIn, Internshala, etc.)
-- Enter your search keyword and scan duration
+- Open the Chrome extension and select a platform
+- Enter your search keyword and target scan duration
 - Click **Start Scan** to begin scraping
 
-### **2. Process Jobs in Streamlit App**
+### **2. Launch Local Servers**
+Start the backend Python Flask server:
 ```bash
-streamlit run jobauto.py
+python server.py
 ```
-- Upload the `.txt` file from the Chrome extension
-- Enter your Gmail credentials (for sending emails)
-- Upload your resume in any format (PDF, DOCX, XLSX, PPTX, Images, TXT) - it will be automatically converted to PDF
-- Click **Analyze TXT with Gemini** to extract jobs
-- Review and send application emails
 
-### **📄 Supported Resume Formats**
-The resume uploader automatically converts the following formats to PDF:
-- **Documents**: DOCX, DOC, PDF
-- **Spreadsheets**: XLSX, XLS
-- **Presentations**: PPTX, PPT
-- **Images**: PNG, JPG, JPEG, GIF, BMP
-- **Text**: TXT
+### **3. Process Jobs in the Dashboard**
+- Navigate to `localhost:5000` or open `ui/login.html` locally
+- **Sign up / Sign in** using Supabase securely
+- Upload the scraped `.txt` file, plug in your Gmail credentials, and upload your resume 
+- Review jobs and hit **Send Email**
 
 ---
 
 ## 📁 **Project Structure**
 ```
 job-automation/
-├── .gitignore                  # Ignored files
-├── README.md                   # This file
+├── ui/                         # Modern HTML/JS/CSS Web App 
+│   ├── login.html              # Supabase Auth Login Component 
+│   ├── jobs.html               # Main Dashboard Component
+│   ├── login.js
+│   ├── jobs.js
+│   └── supabase_init.js        # Supabase connectivity
+├── server.py                   # Flask API Backend
+├── .env                        # Private configurations
 ├── requirements.txt            # Python dependencies
-├── jobauto.py                  # Main Streamlit app
-├── job_tracker.csv             # Application tracking
-├── .env                        # Environment variables
-├── .streamlit/                 # Streamlit config
-└── chrome-extension-v2/        # Chrome extension files
-    ├── manifest.json           # Extension manifest
-    ├── popup.html              # Extension UI
-    ├── popup.js                # Extension logic
-    ├── background.js           # Background service
-    └── icons/                  # Extension icons
+├── chrome-extension-v2/        # Chrome Extension Folder
+└── README.md                   
 ```
-
----
-
-## 🔧 **Configuration**
-
-### **Environment Variables**
-| Variable          | Description                                  |
-|-------------------|----------------------------------------------|
-| `GEMINI_API_KEY`  | Your Google Gemini API key                   |
-
-### **Customization Options**
-- Adjust scan duration in Chrome extension
-- Modify email templates in `jobauto.py`
-- Change job filtering criteria (e.g., location)
 
 ---
 
 ## 🤝 **Contributing**
 
-We welcome contributions! Here's how you can help:
+We welcome contributions! 
 
 1. **Fork the repository** and create your branch:
    ```bash
    git checkout -b feature/your-feature
    ```
-
-2. **Install development dependencies** (if any):
-   ```bash
-   pip install -r dev-requirements.txt  # Add this if needed
-   ```
-
-3. **Submit a pull request** with a clear description of changes.
-
-### **Code Style Guidelines**
-- Follow **PEP 8** for Python code
-- Use **consistent indentation** (4 spaces)
-- Write **clear, concise comments**
+2. **Submit a pull request** with a clear description of changes.
 
 ---
 
 ## 📝 **License**
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the `LICENSE` file for details.
 
 ---
 
 ## 👥 **Authors & Contributors**
 👤 **Vaibhaw Upadhyay** - [LinkedIn](https://www.linkedin.com/in/vaibhaw-upadhyay-8aa4b31aa/)
-
----
-
----
-
-## 🗺️ **Roadmap**
-### **Upcoming Features**
-- [ ] Add support for more job platforms (e.g., AngelList)
-- [ ] Implement email sending queue with retry logic
-- [ ] Add resume parsing for better job matching
-- [ ] Mobile app version (Flutter)
-- [ ] Advanced PDF conversion with better formatting preservation
-
-### **Known Issues**
-- [ ] Chrome extension may require permissions on first run
-- [ ] Gemini API rate limits may affect performance
-
----
-
-## 💡 **Why This Project?**
-Job Automation Suite **saves you hours** by:
-✅ Automating job scraping from multiple platforms
-✅ Drafting professional emails with AI
-✅ Tracking applications in one place
-✅ Preventing duplicate applications
-
-**Join us in making job hunting easier!** 🚀
-
----

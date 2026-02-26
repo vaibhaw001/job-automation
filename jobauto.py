@@ -595,21 +595,14 @@ else:
 # =========================
 # GEMINI SETUP
 # =========================
-st.subheader("🔑 Gemini API Key")
+# Load Gemini API key from .env file (hidden from the web page)
+gemini_api_key = os.getenv("GEMINI_API_KEY", "")
 
-# Try to load from .env file first
-env_api_key = os.getenv("GEMINI_API_KEY", "")
-
-gemini_api_key = st.text_input(
-    "Enter your Gemini API Key",
-    type="password",
-    value=env_api_key,
-    placeholder="Get it from https://aistudio.google.com/apikey",
-    key="gemini_key"
-)
-if not gemini_api_key:
-    st.info("Enter your Gemini API key to continue. Get one free at: https://aistudio.google.com/apikey")
-    st.info("💡 Tip: Add GEMINI_API_KEY to your .env file to auto-fill this field.")
+if gemini_api_key:
+    st.success("🔑 Gemini API Key loaded from `.env` file.")
+else:
+    st.warning("⚠️ Gemini API Key not found. Add `GEMINI_API_KEY=your_key_here` to a `.env` file in the project root.")
+    st.info("Get a free API key at: https://aistudio.google.com/apikey")
 
 # =========================
 # PROMPT TEMPLATE

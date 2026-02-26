@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Dashboard – RoleMatch AI</title>
+    <meta name="description" content="View and manage scraped job postings with AI-generated email drafts.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-input: rgba(30, 41, 59, 0.6);
+            --bg-row: rgba(30, 41, 59, 0.3);
+            --bg-row-hover: rgba(30, 41, 59, 0.55);
+            --border-subtle: rgba(99, 102, 241, 0.2);
+            --border-focus: rgba(99, 102, 241, 0.6);
+            --accent-primary: #6366f1;
+            --accent-secondary: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.1);
+            --success-border: rgba(52, 211, 153, 0.3);
+            --error: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.1);
+            --warning: #fbbf24;
+            --warning-bg: rgba(251, 191, 36, 0.1);
+            --mail-accent: #38bdf8;
+            --mail-glow: rgba(56, 189, 248, 0.25);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* ── Background ── */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            z-index: 0;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+
+        .bg-orb--1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.3), transparent 70%);
+            top: -8%;
+            right: -4%;
+        }
+
+        .bg-orb--2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.22), transparent 70%);
+            bottom: -8%;
+            left: -4%;
+            animation-delay: -4s;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1)
+            }
+
+            50% {
+                transform: translate(30px, -20px) scale(1.1)
+            }
+
+            100% {
+                transform: translate(-20px, 30px) scale(.95)
+            }
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--accent-secondary);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFade 6s ease-in-out infinite;
+        }
+
+        @keyframes particleFade {
+            0% {
+                opacity: 0;
+                transform: translateY(0)
+            }
+
+            30% {
+                opacity: .45
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-120px)
+            }
+        }
+
+        /* ── Layout ── */
+        .dashboard {
+            position: relative;
+            z-index: 1;
+            max-width: 1260px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+            animation: fadeIn .6s cubic-bezier(.16, 1, .3, 1) both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ── Header ── */
+        .dash-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .dash-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .dash-header .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-primary), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .dash-header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dash-header .nav-links {
+            display: flex;
+            gap: .6rem;
+        }
+
+        .nav-pill {
+            padding: .45rem .95rem;
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            transition: all .25s;
+        }
+
+        .nav-pill:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, .04);
+            border-color: var(--border-subtle);
+        }
+
+        .nav-pill.active {
+            color: var(--accent-secondary);
+            background: rgba(99, 102, 241, .08);
+            border-color: var(--border-subtle);
+        }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: flex;
+            gap: .8rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.4rem;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 140px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            transition: transform .25s, box-shadow .25s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+
+        .stat-info .stat-label {
+            font-size: .72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-weight: 600;
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .8rem;
+            margin-bottom: 1rem;
+        }
+
+        .toolbar .search-box {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: .55rem .9rem;
+            flex: 1;
+            max-width: 340px;
+            transition: border-color .3s;
+        }
+
+        .toolbar .search-box:focus-within {
+            border-color: var(--border-focus);
+        }
+
+        .toolbar .search-box input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: .88rem;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .toolbar .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .toolbar .filter-group {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .filter-chip {
+            padding: .4rem .8rem;
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 600;
+            border: 1px solid var(--border-subtle);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all .2s;
+            font-family: inherit;
+        }
+
+        .filter-chip:hover,
+        .filter-chip.active {
+            background: rgba(99, 102, 241, .1);
+            color: var(--accent-secondary);
+            border-color: var(--accent-primary);
+        }
+
+        /* ── Table card ── */
+        .table-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: visible;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .3), 0 0 30px var(--accent-glow);
+        }
+
+        /* ── Table ── */
+        .jobs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .jobs-table thead th {
+            padding: .85rem 1rem;
+            text-align: left;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            cursor: pointer;
+            user-select: none;
+            transition: color .2s;
+            white-space: nowrap;
+        }
+
+        .jobs-table thead th:hover {
+            color: var(--accent-secondary);
+        }
+
+        .jobs-table thead th .sort-arrow {
+            margin-left: .3rem;
+            font-size: .65rem;
+            opacity: .4;
+        }
+
+        .jobs-table thead th.sorted .sort-arrow {
+            opacity: 1;
+            color: var(--accent-secondary);
+        }
+
+        .jobs-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+            transition: background .2s;
+        }
+
+        .jobs-table tbody tr:hover {
+            background: var(--bg-row-hover);
+        }
+
+        .jobs-table tbody td {
+            padding: .75rem 1rem;
+            font-size: .85rem;
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+
+        /* ── Cell styles ── */
+        .job-title-cell {
+            display: flex;
+            flex-direction: column;
+            gap: .15rem;
+        }
+
+        .job-title-cell .title {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: .9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+        .job-title-cell .company {
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: .2rem .55rem;
+            border-radius: 6px;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .badge-internship {
+            background: rgba(168, 85, 247, .12);
+            color: #c084fc;
+        }
+
+        .badge-fulltime {
+            background: rgba(52, 211, 153, .12);
+            color: #34d399;
+        }
+
+        .badge-contract {
+            background: rgba(251, 191, 36, .12);
+            color: #fbbf24;
+        }
+
+        .badge-parttime {
+            background: rgba(56, 189, 248, .12);
+            color: #38bdf8;
+        }
+
+        .badge-unknown {
+            background: rgba(148, 163, 184, .1);
+            color: #94a3b8;
+        }
+
+        /* ── Skills cell – hover to expand ── */
+        .skills-cell {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            cursor: default;
+        }
+
+        .skills-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            padding: .2rem .5rem;
+            border-radius: 6px;
+            font-size: .7rem;
+            font-weight: 600;
+            color: var(--accent-secondary);
+            background: rgba(99, 102, 241, .06);
+            border: 1px solid rgba(99, 102, 241, .12);
+            white-space: nowrap;
+            transition: all .2s;
+        }
+
+        .skills-cell:hover .skills-preview {
+            background: rgba(99, 102, 241, .15);
+            border-color: var(--accent-primary);
+        }
+
+        .skills-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 200px;
+            max-width: 280px;
+            padding: .6rem .7rem;
+            border-radius: 10px;
+            background: #1e293b;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 10px 32px rgba(0, 0, 0, .5);
+            z-index: 20;
+            flex-wrap: wrap;
+            gap: .3rem;
+            animation: popIn .15s ease both;
+        }
+
+        .skills-cell:hover .skills-popup {
+            display: flex;
+        }
+
+        .skill-tag {
+            padding: .18rem .45rem;
+            border-radius: 5px;
+            font-size: .68rem;
+            font-weight: 600;
+            background: rgba(99, 102, 241, .1);
+            color: var(--accent-secondary);
+            border: 1px solid rgba(99, 102, 241, .15);
+            white-space: nowrap;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Mail column ── */
+        .mail-cell {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            min-width: 130px;
+        }
+
+        .mail-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            padding: .5rem .85rem;
+            border-radius: 8px;
+            border: none;
+            font-size: .78rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mail-btn.send {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #fff;
+            box-shadow: 0 3px 12px var(--mail-glow);
+        }
+
+        .mail-btn.send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--mail-glow);
+        }
+
+        .mail-btn.preview {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .mail-btn.preview:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-secondary);
+            background: rgba(99, 102, 241, .06);
+        }
+
+        .mail-btn.sent {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid var(--success-border);
+            cursor: default;
+        }
+
+        .mail-btn .spinner-sm {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+        }
+
+        .mail-btn.loading .btn-label {
+            display: none;
+        }
+
+        .mail-btn.loading .spinner-sm {
+            display: block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        /* ── Email modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, .65);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            animation: fadeIn .25s ease;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: #111827;
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .5), 0 0 40px var(--accent-glow);
+            animation: modalSlide .35s cubic-bezier(.16, 1, .3, 1) both;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(.97)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.3rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .modal-header h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: color .2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.3rem 1.5rem;
+        }
+
+        .modal-field {
+            margin-bottom: 1rem;
+        }
+
+        .modal-field label {
+            display: block;
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .35rem;
+        }
+
+        .modal-field input,
+        .modal-field textarea {
+            width: 100%;
+            padding: .7rem .9rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: .88rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color .3s;
+        }
+
+        .modal-field input:focus,
+        .modal-field textarea:focus {
+            border-color: var(--border-focus);
+        }
+
+        .modal-field textarea {
+            resize: vertical;
+            min-height: 180px;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: .6rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .modal-footer .btn {
+            padding: .6rem 1.2rem;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .modal-footer .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        .modal-footer .btn-cancel:hover {
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+
+        .modal-footer .btn-send {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            border: none;
+            color: #fff;
+            box-shadow: 0 3px 12px var(--mail-glow);
+        }
+
+        .modal-footer .btn-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--mail-glow);
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: 3.5rem 1.5rem;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: .8rem;
+            opacity: .7;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: .4rem;
+        }
+
+        .empty-state p {
+            font-size: .85rem;
+            color: var(--text-muted);
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        /* ── Responsive ── */
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 1.2rem 1rem 2rem;
+            }
+
+            .stats-bar {
+                gap: .5rem;
+            }
+
+            .stat-card {
+                min-width: 120px;
+                padding: .75rem .9rem;
+            }
+
+            .jobs-table thead th,
+            .jobs-table tbody td {
+                padding: .6rem .7rem;
+                font-size: .78rem;
+            }
+        }
+
+        /* ── Copyright ── */
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-bottom: 1rem;
+            font-size: .75rem;
+            color: var(--text-muted);
+            opacity: .5;
+        }
+
+        /* ── Details cell – compact icon btn ── */
+        /* ── Details cell – hover to expand ── */
+        .details-cell {
+            position: relative;
+        }
+
+        .details-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: .2rem;
+            padding: .3rem .55rem;
+            border-radius: 6px;
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .06);
+            cursor: default;
+            transition: all .2s;
+        }
+
+        .details-cell:hover .details-trigger {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, .07);
+            border-color: rgba(255, 255, 255, .12);
+        }
+
+        .details-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            width: 420px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding: 1rem 1.1rem;
+            border-radius: 10px;
+            background: #1e293b;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 10px 32px rgba(0, 0, 0, .5);
+            z-index: 20;
+            animation: popIn .15s ease both;
+        }
+
+        .details-cell:hover .details-popup {
+            display: block;
+        }
+
+        .details-popup-title {
+            font-size: .68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: .4rem;
+            padding-bottom: .3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .details-popup-text {
+            font-size: .78rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+
+        .details-popup::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .details-popup::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .details-popup::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, .25);
+            border-radius: 4px;
+        }
+
+        /* ── Settings Panel ── */
+        .settings-toggle {
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 700;
+            font-family: inherit;
+            border: 1px solid var(--border-subtle);
+            background: rgba(99, 102, 241, .06);
+            color: var(--accent-secondary);
+            cursor: pointer;
+            transition: all .25s;
+        }
+
+        .settings-toggle:hover {
+            background: rgba(99, 102, 241, .14);
+            border-color: var(--accent-primary);
+        }
+
+        .settings-panel {
+            display: none;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: .6rem;
+            margin-bottom: 1.4rem;
+            animation: fadeIn .35s ease;
+        }
+
+        .settings-panel.open {
+            display: block;
+        }
+
+        /* Accordion dropdown */
+        .accordion {
+            border: 1px solid rgba(255, 255, 255, .05);
+            border-radius: 10px;
+            margin-bottom: .4rem;
+            overflow: hidden;
+        }
+
+        .accordion:last-child {
+            margin-bottom: 0;
+        }
+
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .7rem 1rem;
+            background: rgba(255, 255, 255, .02);
+            cursor: pointer;
+            user-select: none;
+            transition: background .2s;
+        }
+
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, .05);
+        }
+
+        .accordion-header h3 {
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--accent-secondary);
+            margin: 0;
+        }
+
+        .accordion-arrow {
+            font-size: .65rem;
+            color: var(--text-muted);
+            transition: transform .25s;
+        }
+
+        .accordion.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            display: none;
+            padding: .8rem 1rem;
+            border-top: 1px solid rgba(255, 255, 255, .05);
+        }
+
+        .accordion.open .accordion-body {
+            display: block;
+        }
+
+        .settings-field {
+            margin-bottom: .6rem;
+        }
+
+        .settings-field label {
+            display: block;
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .25rem;
+        }
+
+        .settings-field input,
+        .settings-field textarea {
+            width: 100%;
+            padding: .55rem .75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: .84rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color .3s;
+        }
+
+        .settings-field input:focus,
+        .settings-field textarea:focus {
+            border-color: var(--border-focus);
+        }
+
+        .settings-field textarea {
+            resize: vertical;
+            min-height: 90px;
+            line-height: 1.5;
+        }
+
+        .settings-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .45rem .9rem;
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 700;
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+            transition: all .25s;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            box-shadow: 0 3px 12px var(--accent-glow);
+        }
+
+        .settings-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px var(--accent-glow);
+        }
+
+        /* Applied tracker table */
+        .tracker-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+
+        .tracker-table th {
+            text-align: left;
+            padding: .4rem .6rem;
+            font-size: .68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .tracker-table td {
+            padding: .4rem .6rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+        }
+
+        .tracker-empty {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-size: .8rem;
+        }
+
+        .tracker-scroll {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .tracker-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .tracker-scroll::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, .25);
+            border-radius: 4px;
+        }
+
+        /* ── Analyze section ── */
+        .analyze-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1rem 1.3rem;
+        }
+
+        .analyze-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .65rem 1.3rem;
+            border-radius: 10px;
+            font-size: .88rem;
+            font-weight: 700;
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+            transition: all .3s;
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 16px var(--mail-glow);
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px var(--mail-glow);
+        }
+
+        .analyze-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .analyze-status {
+            font-size: .82rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="bg-orb bg-orb--1"></div>
+    <div class="bg-orb bg-orb--2"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="dashboard">
+
+        <!-- ── Header ── -->
+        <header class="dash-header">
+            <a href="login.html" class="brand" style="text-decoration:none;color:inherit;">
+                <div class="brand-icon">💼</div>
+                <h1>RoleMatch AI — Job Dashboard</h1>
+            </a>
+            <nav class="nav-links">
+                <a href="login.html" class="nav-pill">Login</a>
+                <a href="upload.html" class="nav-pill">Upload</a>
+                <a href="jobs.html" class="nav-pill active">Jobs</a>
+            </nav>
+            <button class="settings-toggle" id="settingsToggle">⚙️ Settings</button>
+        </header>
+
+        <!-- ── Settings Panel ── -->
+        <div class="settings-panel" id="settingsPanel">
+
+            <!-- 1. Gmail Credentials -->
+            <div class="accordion" id="accCreds">
+                <div class="accordion-header">
+                    <h3>📧 Gmail Credentials</h3>
+                    <span class="accordion-arrow">▼</span>
+                </div>
+                <div class="accordion-body">
+                    <div class="settings-field">
+                        <label for="senderEmail">Sender Gmail</label>
+                        <input type="email" id="senderEmail" placeholder="yourname@gmail.com">
+                    </div>
+                    <div class="settings-field">
+                        <label for="senderAppPassword">App Password</label>
+                        <input type="password" id="senderAppPassword" placeholder="16-character app password">
+                    </div>
+                    <button class="settings-btn" id="saveCredsBtn">💾 Save Credentials</button>
+                </div>
+            </div>
+
+            <!-- 2. Mail Template -->
+            <div class="accordion" id="accTemplate">
+                <div class="accordion-header">
+                    <h3>✉️ Mail Template</h3>
+                    <span class="accordion-arrow">▼</span>
+                </div>
+                <div class="accordion-body">
+                    <div class="settings-field">
+                        <label for="sampleEmailTemplate">AI will mirror this style</label>
+                        <textarea id="sampleEmailTemplate"
+                            placeholder="Paste a sample email here. AI will use its tone and structure when drafting application emails for each job."></textarea>
+                    </div>
+                    <button class="settings-btn" id="saveSampleBtn">💾 Save Template</button>
+                </div>
+            </div>
+
+            <!-- 3. Applied (Tracker) -->
+            <div class="accordion" id="accApplied">
+                <div class="accordion-header">
+                    <h3>📊 Applied</h3>
+                    <span class="accordion-arrow">▼</span>
+                </div>
+                <div class="accordion-body">
+                    <div class="tracker-scroll" id="trackerContainer">
+                        <div class="tracker-empty" id="trackerEmpty">No emails sent yet.</div>
+                        <table class="tracker-table" id="trackerTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Job Title</th>
+                                    <th>Email</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trackerBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── AI Analyze Bar ── -->
+        <div class="analyze-bar">
+            <button class="analyze-btn" id="analyzeBtn">🤖 Analyze with AI</button>
+            <span class="analyze-status" id="analyzeStatus">Upload a .txt scrape file, set your template, then click
+                Analyze.</span>
+        </div>
+
+        <!-- ── Stats ── -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-icon">📋</span>
+                <div class="stat-info">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total Jobs</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">✅</span>
+                <div class="stat-info">
+                    <div class="stat-value" id="statEligible">0</div>
+                    <div class="stat-label">Eligible</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">📨</span>
+                <div class="stat-info">
+                    <div class="stat-value" id="statSent">0</div>
+                    <div class="stat-label">Emails Sent</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Toolbar ── -->
+        <div class="toolbar">
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="Search jobs, companies, skills…">
+            </div>
+            <div class="filter-group">
+                <button class="filter-chip active" data-filter="all">All</button>
+                <button class="filter-chip" data-filter="Internship">Internship</button>
+                <button class="filter-chip" data-filter="Full-time">Full-time</button>
+                <button class="filter-chip" data-filter="Contract">Contract</button>
+            </div>
+        </div>
+
+        <!-- ── Jobs Table ── -->
+        <div class="table-card">
+            <div class="table-scroll">
+                <table class="jobs-table" id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th data-col="job_id"># <span class="sort-arrow">▲</span></th>
+                            <th data-col="job_title">Job / Company <span class="sort-arrow">▲</span></th>
+                            <th data-col="job_type">Type <span class="sort-arrow">▲</span></th>
+                            <th data-col="location">Location <span class="sort-arrow">▲</span></th>
+                            <th data-col="skills">Skills</th>
+
+                            <th data-col="description">Details</th>
+                            <th data-col="mail">Mail ✉️</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobsBody"></tbody>
+                </table>
+            </div>
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">📭</div>
+                <h3>No jobs found</h3>
+                <p>Upload a job scrape file from the Upload page, or adjust your search filters.</p>
+            </div>
+        </div>
+
+        <p class="copyright">© 2026 RoleMatch AI · Built by Vaibhaw Upadhyay</p>
+    </div>
+
+    <!-- ── Email Preview / Edit Modal ── -->
+    <div class="modal-overlay" id="emailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">✉️ Email Draft</h2>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-field">
+                    <label for="modalTo">To</label>
+                    <input type="email" id="modalTo" placeholder="recipient@example.com">
+                </div>
+                <div class="modal-field">
+                    <label for="modalSubject">Subject</label>
+                    <input type="text" id="modalSubject">
+                </div>
+                <div class="modal-field">
+                    <label for="modalBody">Email Body</label>
+                    <textarea id="modalBody"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" id="modalCancelBtn">Cancel</button>
+                <button class="btn btn-send" id="modalSendBtn">📨 Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_init.js"></script>
+    <script src="jobs.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoleMatch AI — Admin Dashboard</title>
+    <meta name="description" content="Admin dashboard to view all user Google Sheets trackers">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-card: rgba(15, 23, 42, .75);
+            --bg-input: rgba(15, 23, 42, .6);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(148, 163, 184, .1);
+            --accent-primary: #6366f1;
+            --accent-secondary: #818cf8;
+            --accent-glow: rgba(99, 102, 241, .15);
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, .08);
+            --success-border: rgba(52, 211, 153, .2);
+            --warning: #fbbf24;
+            --error: #f87171;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Background ── */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: linear-gradient(rgba(99, 102, 241, .04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, .04) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+
+        .bg-orb--1 {
+            width: 500px;
+            height: 500px;
+            top: -120px;
+            left: -80px;
+            background: rgba(99, 102, 241, .12);
+        }
+
+        .bg-orb--2 {
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            right: -60px;
+            background: rgba(168, 85, 247, .1);
+            animation-delay: -6s;
+        }
+
+        @keyframes orbFloat {
+            to {
+                transform: translateY(30px) scale(1.06);
+            }
+        }
+
+        /* ── Dashboard ── */
+        .dashboard {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 2rem 3rem;
+        }
+
+        /* ── Header ── */
+        .dash-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            font-size: 1.6rem;
+        }
+
+        .brand h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .nav-pill {
+            padding: .45rem .95rem;
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all .25s;
+            border: 1px solid transparent;
+        }
+
+        .nav-pill:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, .04);
+            border-color: var(--border-subtle);
+        }
+
+        .nav-pill.active {
+            background: rgba(99, 102, 241, .12);
+            color: var(--accent-secondary);
+            border-color: rgba(99, 102, 241, .25);
+        }
+
+        /* ── Stats ── */
+        .stats-bar {
+            display: flex;
+            gap: .8rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1rem 1.3rem;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        /* ── Table ── */
+        .table-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .table-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .table-card-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .45rem .9rem;
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 700;
+            font-family: inherit;
+            border: 1px solid var(--border-subtle);
+            background: rgba(99, 102, 241, .06);
+            color: var(--accent-secondary);
+            cursor: pointer;
+            transition: all .25s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(99, 102, 241, .15);
+            border-color: var(--accent-primary);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table thead th {
+            text-align: left;
+            padding: .8rem 1.2rem;
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            background: rgba(255, 255, 255, .015);
+        }
+
+        .users-table tbody td {
+            padding: .8rem 1.2rem;
+            font-size: .85rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+            transition: background .2s;
+        }
+
+        .users-table tbody tr:hover td {
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .user-email {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .emails-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: .2rem .6rem;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 700;
+            background: rgba(99, 102, 241, .1);
+            color: var(--accent-secondary);
+            min-width: 28px;
+        }
+
+        .sheet-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .35rem .7rem;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--success);
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+            text-decoration: none;
+            transition: all .25s;
+        }
+
+        .sheet-link:hover {
+            background: rgba(52, 211, 153, .15);
+            border-color: rgba(52, 211, 153, .35);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(52, 211, 153, .12);
+        }
+
+        /* ── Empty / Loading ── */
+        .status-msg {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+            font-size: .9rem;
+        }
+
+        .status-msg .icon {
+            font-size: 2.5rem;
+            margin-bottom: .6rem;
+        }
+
+        .status-msg h3 {
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            margin-bottom: .3rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(99, 102, 241, .2);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin-bottom: .6rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Copyright ── */
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-bottom: 1rem;
+            font-size: .75rem;
+            color: var(--text-muted);
+            opacity: .5;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 1.2rem 1rem 2rem;
+            }
+
+            .stats-bar {
+                gap: .5rem;
+            }
+
+            .stat-card {
+                min-width: 120px;
+                padding: .75rem .9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-orb bg-orb--1"></div>
+    <div class="bg-orb bg-orb--2"></div>
+
+    <div class="dashboard">
+
+        <!-- ── Header ── -->
+        <header class="dash-header">
+            <a href="login.html" class="brand">
+                <div class="brand-icon">🛡️</div>
+                <h1>RoleMatch AI — Admin</h1>
+            </a>
+            <nav class="nav-links">
+                <a href="login.html" class="nav-pill">Login</a>
+                <a href="upload.html" class="nav-pill">Upload</a>
+                <a href="jobs.html" class="nav-pill">Jobs</a>
+                <a href="admin.html" class="nav-pill active">Admin</a>
+            </nav>
+        </header>
+
+        <!-- ── Stats ── -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-icon">👥</span>
+                <div class="stat-info">
+                    <div class="stat-value" id="statUsers">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">📊</span>
+                <div class="stat-info">
+                    <div class="stat-value" id="statSheets">-</div>
+                    <div class="stat-label">Google Sheets</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">📨</span>
+                <div class="stat-info">
+                    <div class="stat-value" id="statTotalEmails">-</div>
+                    <div class="stat-label">Total Emails Sent</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Users Table ── -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h2>📋 All User Sheets</h2>
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
+            </div>
+            <div class="table-scroll">
+                <table class="users-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User Email</th>
+                            <th>Emails Sent</th>
+                            <th>Google Sheet</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody"></tbody>
+                </table>
+            </div>
+            <div class="status-msg" id="statusMsg">
+                <div class="loading-spinner"></div>
+                <p>Loading user sheets...</p>
+            </div>
+        </div>
+
+        <p class="copyright">© 2026 RoleMatch AI · Admin Panel · Built by Vaibhaw Upadhyay</p>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        const usersBody = document.getElementById('usersBody');
+        const statusMsg = document.getElementById('statusMsg');
+        const statUsers = document.getElementById('statUsers');
+        const statSheets = document.getElementById('statSheets');
+        const statTotalEmails = document.getElementById('statTotalEmails');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        async function loadSheets() {
+            statusMsg.innerHTML = '<div class="loading-spinner"></div><p>Loading user sheets...</p>';
+            statusMsg.style.display = 'block';
+            usersBody.innerHTML = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/sheets`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    statusMsg.innerHTML = `
+                        <div class="icon">⚠️</div>
+                        <h3>Error</h3>
+                        <p>${data.error || 'Failed to load sheets'}</p>
+                    `;
+                    return;
+                }
+
+                const sheets = data.sheets || [];
+
+                if (sheets.length === 0) {
+                    statusMsg.innerHTML = `
+                        <div class="icon">📭</div>
+                        <h3>No user sheets yet</h3>
+                        <p>When users log in and send emails, their Google Sheets will appear here.</p>
+                    `;
+                    statUsers.textContent = '0';
+                    statSheets.textContent = '0';
+                    statTotalEmails.textContent = '0';
+                    return;
+                }
+
+                statusMsg.style.display = 'none';
+
+                let totalEmails = 0;
+                usersBody.innerHTML = sheets.map((s, i) => {
+                    totalEmails += s.emails_sent || 0;
+                    return `
+                        <tr>
+                            <td style="color:var(--text-muted);font-weight:700;">${i + 1}</td>
+                            <td><span class="user-email">${escHtml(s.user_email)}</span></td>
+                            <td><span class="emails-count">${s.emails_sent}</span></td>
+                            <td>
+                                <a class="sheet-link" href="${escHtml(s.sheet_url)}" target="_blank">
+                                    📊 Open Sheet
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                statUsers.textContent = sheets.length;
+                statSheets.textContent = sheets.length;
+                statTotalEmails.textContent = totalEmails;
+
+            } catch (e) {
+                statusMsg.innerHTML = `
+                    <div class="icon">❌</div>
+                    <h3>Cannot connect to server</h3>
+                    <p>Make sure the server is running on ${API_BASE}</p>
+                `;
+            }
+        }
+
+        refreshBtn.addEventListener('click', () => {
+            refreshBtn.textContent = '⏳ Loading...';
+            refreshBtn.disabled = true;
+            loadSheets().then(() => {
+                refreshBtn.textContent = '🔄 Refresh';
+                refreshBtn.disabled = false;
+            });
+        });
+
+        function escHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Load on page ready
+        loadSheets();
+    </script>
+</body>
+
+</html>
