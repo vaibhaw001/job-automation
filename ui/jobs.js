@@ -451,8 +451,11 @@ document.addEventListener('DOMContentLoaded', () => {
         currentMailJobIndex = idx;
         modalTitle.textContent = `✉️ Email — ${job.job_title}`;
         modalTo.value = job.apply_email || '';
-        modalSubject.value = job.email_subject || '';
-        modalBody.value = job.email_body_draft || '';
+        const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
+        const userName = savedUser.name || 'Job Applicant';
+
+        modalSubject.value = (job.email_subject || '').replace(/\[(?:Your|Sender)\s*Name\]/gi, userName);
+        modalBody.value = (job.email_body_draft || '').replace(/\[(?:Your|Sender)\s*Name\]/gi, userName);
         emailModal.classList.add('open');
     }
 
@@ -506,10 +509,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.classList.add('loading');
         btn.disabled = true;
 
+        const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
+        const userName = savedUser.name || 'Job Applicant';
+
+        const formattedSubject = (job.email_subject || '').replace(/\[(?:Your|Sender)\s*Name\]/gi, userName);
+        const formattedBody = (job.email_body_draft || '').replace(/\[(?:Your|Sender)\s*Name\]/gi, userName);
+
         const result = await callSendAPI({
             to: job.apply_email,
-            subject: job.email_subject,
-            body: job.email_body_draft,
+            subject: formattedSubject,
+            body: formattedBody,
             job_id: job.job_id,
             job_title: job.job_title,
             company: job.company

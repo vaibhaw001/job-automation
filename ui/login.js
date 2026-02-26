@@ -148,10 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 setLoading(false);
                 return;
             }
+            const savedFullName = fullName || (authData && authData.user && authData.user.user_metadata ? authData.user.user_metadata.full_name : '');
 
             // Store login state + credentials for Gmail sending
             localStorage.setItem('rolematch_user', JSON.stringify({
-                name: fullName,
+                name: savedFullName,
                 email: email,
                 password: password,
                 loggedIn: true,
