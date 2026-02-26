@@ -48,7 +48,7 @@ CORS(app)
 
 # ── Config ──
 CSV_FILE = "job_tracker.csv"
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = "/tmp/uploads" if os.environ.get("VERCEL") else "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # ── In-memory session store (simple for single user) ──
@@ -228,7 +228,7 @@ def upload_txt():
     session["txt_filename"] = file.filename
 
     # Also save to scanned_jobs folder
-    scanned_dir = "scanned_jobs"
+    scanned_dir = "/tmp/scanned_jobs" if os.environ.get("VERCEL") else "scanned_jobs"
     os.makedirs(scanned_dir, exist_ok=True)
     save_path = os.path.join(scanned_dir, file.filename)
     with open(save_path, 'w', encoding='utf-8') as f:

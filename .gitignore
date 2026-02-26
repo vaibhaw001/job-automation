@@ -27,3 +27,4 @@ Thumbs.db
 # Downloaded job files
 *.txt
 !README.txt
+uploads
