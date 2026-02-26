@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── State ──
     let allJobs = [];
     let sentEmails = new Set();
-    let sentJobIds = new Set();
+    let sentJobKeys = new Set();
     let activeFilter = 'all';
     let searchQuery = '';
     let sortCol = 'job_id';
@@ -70,10 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessionData = await fetchJSON('/api/session');
 
         // Populate sent emails from supabase
-        const { data: trackerData } = await window.sbClient.from('job_tracker').select('contact_email, post_id');
+        const { data: trackerData } = await window.sbClient.from('job_tracker').select('contact_email, company, job_title');
         if (trackerData) {
             sentEmails = new Set(trackerData.map(r => r.contact_email));
-            sentJobIds = new Set(trackerData.map(r => String(r.post_id)));
+            sentJobKeys = new Set(trackerData.map(r => (r.company || '') + '|' + (r.job_title || '')));
         }
 
         // Pre-fill credentials from localStorage (saved at login)
@@ -340,7 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
         emptyState.style.display = 'none';
 
         jobsBody.innerHTML = jobs.map((job, i) => {
-            const isSent = sentEmails.has(job.apply_email) || sentJobIds.has(String(job.job_id));
+            const jobKey = (job.company || '') + '|' + (job.job_title || '');
+            const isSent = sentEmails.has(job.apply_email) || sentJobKeys.has(jobKey);
             const badgeClass = getBadgeClass(job.job_type);
             const skills = (job.skills || '').split(',').map(s => s.trim()).filter(Boolean);
 
@@ -398,8 +399,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStats(filteredJobs) {
         const total = allJobs.length;
-        const eligible = allJobs.filter(j => j.apply_email && j.apply_email.includes('@') && !sentEmails.has(j.apply_email) && !sentJobIds.has(String(j.job_id))).length;
-        const sent = sentJobIds.size || sentEmails.size; // Prefer count of distinct jobs
+        const eligible = allJobs.filter(j => {
+            const jKey = (j.company || '') + '|' + (j.job_title || '');
+            return j.apply_email && j.apply_email.includes('@') && !sentEmails.has(j.apply_email) && !sentJobKeys.has(jKey);
+        }).length;
+        const sent = sentJobKeys.size || sentEmails.size; // Prefer count of distinct jobs
 
         animateNumber(statTotal, total);
         animateNumber(statEligible, eligible);
@@ -480,7 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (result.success) {
             sentEmails.add(modalTo.value);
-            sentJobIds.add(String(job.job_id));
+            const jobKey = (job.company || '') + '|' + (job.job_title || '');
+            sentJobKeys.add(jobKey);
             modalSendBtn.textContent = '✓ Sent!';
             modalSendBtn.style.background = 'linear-gradient(135deg, #059669, #34d399)';
             await delay(800);
@@ -514,7 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (result.success) {
             sentEmails.add(job.apply_email);
-            sentJobIds.add(String(job.job_id));
+            const jobKey = (job.company || '') + '|' + (job.job_title || '');
+            sentJobKeys.add(jobKey);
             renderAll();
         } else {
             btn.querySelector('.btn-label').textContent = '❌ Failed';
