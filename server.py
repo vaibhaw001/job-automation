@@ -237,6 +237,8 @@ def upload_resume():
     })
 
 
+from werkzeug.utils import secure_filename
+
 # ── Upload TXT scrape file ──
 @app.route('/api/upload/txt', methods=['POST'])
 def upload_txt():
@@ -254,13 +256,18 @@ def upload_txt():
     # Also save to scanned_jobs folder
     scanned_dir = "/tmp/scanned_jobs" if os.environ.get("VERCEL") else "scanned_jobs"
     os.makedirs(scanned_dir, exist_ok=True)
-    save_path = os.path.join(scanned_dir, file.filename)
+    
+    # Strip any paths to fix weird paths from browser
+    safe_name = secure_filename(file.filename) or "scraped_jobs.txt"
+    save_path = os.path.abspath(os.path.join(scanned_dir, safe_name))
+    print(f"[DEBUG] Saving txt file to: {save_path}")
+    
     with open(save_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
     return jsonify({
         "success": True,
-        "filename": file.filename,
+        "filename": safe_name,
         "char_count": len(content),
         "preview": content[:1000]
     })
