@@ -3,7 +3,7 @@
 // Integrated with Flask backend API
 // ==========================================
 
-const API_BASE = window.location.origin;
+const API_BASE = (window.location.origin === 'file://' || window.location.origin === 'null') ? 'http://localhost:5000' : window.location.origin;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -57,6 +57,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Initialize ──
     init();
+
+    // ── Logout ──
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                // Call backend logout
+                await fetch(`${API_BASE}/api/logout`, { method: 'POST' });
+            } catch (err) { }
+            // Clear local credentials/state
+            localStorage.removeItem('rolematch_user');
+            // Sign out of Supabase
+            if (window.sbClient) {
+                await window.sbClient.auth.signOut();
+            }
+            window.location.href = 'login.html';
+        });
+    }
 
     // ──────────────────────────────
     // INITIALIZATION

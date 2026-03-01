@@ -1,9 +1,7 @@
 // ========================================
 // login.js – RoleMatch AI Login Page Logic
 // ========================================
-
-const API_BASE = window.location.origin;
-
+const API_BASE = (window.location.origin === 'file://' || window.location.origin === 'null') ? 'http://localhost:5000' : window.location.origin;
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── DOM Elements ──

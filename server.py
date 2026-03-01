@@ -21,7 +21,7 @@ try:
     from sheets_manager import get_or_create_sheet, log_sent_email, get_sheet_url, get_sheet_data, list_all_user_sheets
     SHEETS_AVAILABLE = True
 except Exception as e:
-    print(f"⚠️  Google Sheets integration not available: {e}")
+    print(f"Warning: Google Sheets integration not available: {e}")
     SHEETS_AVAILABLE = False
 
 # PDF reading
@@ -138,6 +138,17 @@ def login():
     full_name = data.get('full_name', '')
     if not email or not password:
         return jsonify({"success": False, "error": "Email and password are required"}), 400
+    
+    # Clear previous session data so new login starts fresh
+    session["resume_text"] = ""
+    session["resume_name"] = ""
+    session["resume_path"] = None
+    session["resume_original_name"] = ""
+    session["sample_email"] = ""
+    session["jobs"] = []
+    session["txt_content"] = ""
+    session["txt_filename"] = ""
+    
     # Save credentials to session for email sending
     session["sender_email"] = email
     session["sender_app_password"] = password
@@ -147,8 +158,21 @@ def login():
     # Supabase handles its own session on frontend
     sheet_url = None
 
-
     return jsonify({"success": True, "email": email, "sheet_url": sheet_url})
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session["resume_text"] = ""
+    session["resume_name"] = ""
+    session["resume_path"] = None
+    session["resume_original_name"] = ""
+    session["sender_email"] = ""
+    session["sender_app_password"] = ""
+    session["sample_email"] = ""
+    session["jobs"] = []
+    session["txt_content"] = ""
+    session["txt_filename"] = ""
+    return jsonify({"success": True})
 
 
 # ── Set sender credentials ──
@@ -263,6 +287,35 @@ def analyze_jobs():
     resume_text = session.get("resume_text", "")
     user_name = session.get("full_name", "") or session.get("resume_name", "")
 
+    # Fallback to load from disk if session is empty (e.g. server reset)
+    import glob
+    if not txt_content:
+        scanned_dir = "/tmp/scanned_jobs" if os.environ.get("VERCEL") else "scanned_jobs"
+        txt_files = glob.glob(os.path.join(scanned_dir, "*.txt"))
+        if txt_files:
+            latest = max(txt_files, key=os.path.getmtime)
+            with open(latest, 'r', encoding='utf-8', errors='ignore') as f:
+                txt_content = f.read()
+
+    if not resume_text:
+        uploads_dir = "/tmp/uploads" if os.environ.get("VERCEL") else "uploads"
+        resume_files = glob.glob(os.path.join(uploads_dir, "resume_*.*"))
+        if resume_files:
+            latest = max(resume_files, key=os.path.getmtime)
+            ext = latest.lower().rsplit('.', 1)[-1]
+            if ext == 'pdf':
+                resume_text = extract_text_from_pdf(latest)
+            elif ext == 'txt':
+                with open(latest, 'r', encoding='utf-8', errors='ignore') as f:
+                    resume_text = f.read()
+            elif ext in ['docx', 'doc'] and DOCX_AVAILABLE:
+                try:
+                    from docx import Document
+                    doc = Document(latest)
+                    resume_text = '\n'.join([p.text for p in doc.paragraphs])
+                except:
+                    pass
+
     if not txt_content:
         return jsonify({"success": False, "error": "No job text to analyze. Upload a .txt file first."}), 400
 
@@ -347,7 +400,7 @@ TEXT TO ANALYZE:
             )
             if resp.status_code == 429 and attempt < retries:
                 wait = 10 * (attempt + 1)
-                print(f"⏳ Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
+                print(f"[Wait] Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
                 time.sleep(wait)
                 continue
             resp.raise_for_status()
@@ -638,7 +691,7 @@ def admin_page():
 # =========================
 if __name__ == '__main__':
     print("\n" + "="*50)
-    print("  🤖 RoleMatch AI Server")
-    print("  📍 http://localhost:5000")
+    print("  [x] RoleMatch AI Server")
+    print("  --> http://localhost:5000")
     print("="*50 + "\n")
-    app.run(debug=True, port=5000)
+    app.run(debug=True, use_reloader=False, port=5000)

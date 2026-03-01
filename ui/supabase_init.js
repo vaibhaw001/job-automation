@@ -4,7 +4,8 @@ window.supabaseConfigLoaded = false;
 window.initSupabase = async function () {
     if (window.sbClient) return;
     try {
-        const res = await fetch('/api/config');
+        const API_BASE = (window.location.origin === 'file://' || window.location.origin === 'null' || !window.location.origin) ? 'http://localhost:5000' : window.location.origin;
+        const res = await fetch(`${API_BASE}/api/config`);
         const data = await res.json();
         if (data.supabase_url && data.supabase_key) {
             window.supabaseUrl = data.supabase_url;
