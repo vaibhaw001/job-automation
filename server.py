@@ -476,12 +476,16 @@ TEXT TO ANALYZE:
         parsed_output = extract_json(response_text)
         
         # Strictly filter out any jobs that do not contain a genuinely valid email address
+        import re
         raw_jobs = parsed_output.get("jobs", [])
         jobs = []
+        # Basic email validation regex to prevent URLs or random strings from slipping in
+        email_regex = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+        
         for job in raw_jobs:
             email = str(job.get("apply_email", "")).lower().strip()
-            # Must contain an @ and a ., and must not be obvious placeholder text
-            if "@" in email and "." in email and "not" not in email and "none" not in email:
+            # Must strictly match email pattern and not be a placeholder
+            if email_regex.match(email) and not email.startswith("http") and not email.startswith("www"):
                 jobs.append(job)
 
         # Add job_id and match_score
