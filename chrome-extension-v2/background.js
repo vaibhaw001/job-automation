@@ -141,34 +141,63 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // Injected scroll function
 function startScroll() {
     window._scrolling = true;
+
+    // Add visual indicator so the user knows the scanner is actively working
+    const indicator = document.createElement('div');
+    indicator.id = 'rolematch-scanner-indicator';
+    indicator.style.position = 'fixed';
+    indicator.style.bottom = '20px';
+    indicator.style.right = '20px';
+    indicator.style.backgroundColor = '#6366f1';
+    indicator.style.color = '#ffffff';
+    indicator.style.padding = '12px 24px';
+    indicator.style.borderRadius = '30px';
+    indicator.style.zIndex = '9999999';
+    indicator.style.fontFamily = 'sans-serif';
+    indicator.style.fontWeight = 'bold';
+    indicator.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+    indicator.style.pointerEvents = 'none';
+    indicator.innerHTML = '🤖 RoleMatch AI: Scanning & Scrolling...';
+    document.body.appendChild(indicator);
+
     const scroll = () => {
-        if (!window._scrolling) return;
-
-        // Scroll the main window
-        window.scrollBy(0, 500);
-
-        // Handle sites with internal scroll panes
-        const panes = [
-            document.documentElement,
-            document.body,
-            document.querySelector('.jobs-search-results-list'), // LinkedIn old
-            document.querySelector('.scaffold-layout__list'), // LinkedIn new
-            document.querySelector('.jobsearch-LeftPane') // Indeed
-        ];
-
-        for (const pane of panes) {
-            if (pane) {
-                try { pane.scrollTop += 500; } catch (e) { }
+        if (!window._scrolling) {
+            if (document.getElementById('rolematch-scanner-indicator')) {
+                document.getElementById('rolematch-scanner-indicator').remove();
             }
+            return;
         }
 
-        setTimeout(scroll, 500);
+        // 1. Scroll the main window down a large chunk
+        window.scrollBy({ top: 800, behavior: 'smooth' });
+
+        // 2. Automatically find ALL internal scrollable containers and scroll them
+        const scrollableElements = Array.from(document.querySelectorAll('*')).filter(el => {
+            const style = window.getComputedStyle(el);
+            return (style.overflowY === 'auto' || style.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+        });
+
+        scrollableElements.forEach(el => {
+            el.scrollBy({ top: 800, behavior: 'smooth' });
+        });
+
+        // 3. Click any "Load More" or "See More" buttons typical of job boards
+        document.querySelectorAll('button').forEach(btn => {
+            const text = (btn.innerText || '').toLowerCase();
+            if (text.includes('load more') || text.includes('see more') || text.includes('show more')) {
+                try { btn.click(); } catch (e) { }
+            }
+        });
+
+        setTimeout(scroll, 800);
     };
     scroll();
 }
 
 function stopScroll() {
     window._scrolling = false;
+    const indicator = document.getElementById('rolematch-scanner-indicator');
+    if (indicator) indicator.remove();
 }
 
 async function finishScan() {
@@ -218,7 +247,7 @@ async function finishScan() {
 
         // Navigate same tab to RoleMatch AI and make it active
         if (autoUpload) {
-            await chrome.tabs.update(scanTabId, { url: 'https://rolematch.vercel.app/login.html', active: true });
+            await chrome.tabs.update(scanTabId, { url: 'https://rolematch.vercel.app/login.html' });
         }
 
     } catch (e) {
@@ -231,10 +260,61 @@ async function finishScan() {
 
 // Content extractor (injected)
 function extractContent(site) {
-    // Collect ALL visible text on the page natively as the user requested
     let content = `Job Scan Results\nPlatform: ${site}\nDate: ${new Date().toLocaleString()}\n${'='.repeat(50)}\n\n`;
 
-    // Fall back to just dumping everything in the DOM body to be 100% sure we get ALL the text
+    // 1. Precise extraction if the CSS tags match (cleanest for AI)
+    try {
+        if (site === 'linkedin') {
+            document.querySelectorAll('.feed-shared-update-v2, .update-components-text, .job-card-container').forEach((el, i) => {
+                const text = el.innerText?.trim();
+                if (text && text.length > 30) {
+                    content += `[${i + 1}]\n${text.slice(0, 2000)}\n\n---\n\n`;
+                }
+            });
+        } else if (site === 'internshala') {
+            document.querySelectorAll('.individual_internship, .internship_meta').forEach((el, i) => {
+                const title = el.querySelector('.profile, h3')?.innerText || '';
+                const company = el.querySelector('.company_name, .company')?.innerText || '';
+                const location = el.querySelector('.location_link, .locations')?.innerText || '';
+                const stipend = el.querySelector('.stipend, .salary')?.innerText || '';
+                if (title) {
+                    content += `[${i + 1}] ${title}\nCompany: ${company}\nLocation: ${location}\nStipend: ${stipend}\n\n---\n\n`;
+                }
+            });
+        } else if (site === 'indeed') {
+            document.querySelectorAll('.job_seen_beacon, .jobsearch-ResultsList > li').forEach((el, i) => {
+                const title = el.querySelector('.jobTitle, h2')?.innerText || '';
+                const company = el.querySelector('.companyName, .company')?.innerText || '';
+                const location = el.querySelector('.companyLocation, .location')?.innerText || '';
+                const salary = el.querySelector('.salary-snippet, .salary')?.innerText || '';
+                if (title) {
+                    content += `[${i + 1}] ${title}\nCompany: ${company}\nLocation: ${location}\nSalary: ${salary}\n\n---\n\n`;
+                }
+            });
+        } else if (site === 'naukri') {
+            document.querySelectorAll('.jobTuple, article.jobTupleHeader').forEach((el, i) => {
+                const title = el.querySelector('.title, .jobTitle')?.innerText || '';
+                const company = el.querySelector('.companyInfo, .company')?.innerText || '';
+                const exp = el.querySelector('.experience, .exp')?.innerText || '';
+                const salary = el.querySelector('.salary, .sal')?.innerText || '';
+                const location = el.querySelector('.location, .loc')?.innerText || '';
+                if (title) {
+                    content += `[${i + 1}] ${title}\nCompany: ${company}\nExp: ${exp}\nSalary: ${salary}\nLocation: ${location}\n\n---\n\n`;
+                }
+            });
+        } else {
+            // Generic extraction
+            document.querySelectorAll('article, .job, .listing, .result, .card').forEach((el, i) => {
+                const text = el.innerText?.trim();
+                if (text && text.length > 30) {
+                    content += `[${i + 1}]\n${text.slice(0, 1500)}\n\n---\n\n`;
+                }
+            });
+        }
+    } catch (e) { }
+
+    // 2. ALWAYS fall back to grabbing ALL the raw visible text of the page, ensuring we absolutely never miss anything
+    content += "\n=== FULL PAGE TEXT FALLBACK ===\n";
     content += document.body.innerText || 'No content found';
 
     return content;
