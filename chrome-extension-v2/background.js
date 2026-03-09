@@ -47,9 +47,10 @@ async function startScan(customUrl = '') {
             ? SITES.other(currentKeyword, customUrl)
             : SITES[currentSite](currentKeyword);
 
-        // Create a new background tab for scanning so the user can keep browsing
-        const newTab = await chrome.tabs.create({ url, active: false }); // We'll make it active initially, or false. Wait, user said "background scrolling". Let's make it active: false.
-        scanTabId = newTab.id;
+        // Get the current active tab and update it with the job site URL
+        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        await chrome.tabs.update(currentTab.id, { url });
+        scanTabId = currentTab.id;
 
         sendStatus('Waiting for page to load...');
 
