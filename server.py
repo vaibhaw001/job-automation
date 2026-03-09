@@ -326,7 +326,17 @@ def analyze_jobs():
     if not txt_content:
         return jsonify({"success": False, "error": "No job text to analyze. Upload a .txt file first."}), 400
 
-    user_sample_email_safe = sample_email if sample_email.strip() else "Professional email"
+    default_email_template = """Dear Hiring Manager,
+
+I am writing to express my strong interest in the [Job Title] position at [Company Name]. With my background and skill set, I am confident I can bring value to your team and contribute to your ongoing success.
+
+I am particularly drawn to this opportunity because of the requirements outlined in the job description, which align perfectly with my recent experiences. 
+
+Please find my resume attached for your review. I would welcome the opportunity to discuss how my skills align with the needs of your team.
+
+Thank you for your time and consideration."""
+    
+    user_sample_email_safe = sample_email if sample_email.strip() else default_email_template
     user_name_display = user_name if user_name else "[Your Name]"
 
     PROMPT = f"""
@@ -401,6 +411,7 @@ TEXT TO ANALYZE:
                 },
                 json={
                     "model": "openrouter/auto",
+                    "max_tokens": 8000,
                     "temperature": 0,
                     "messages": [{"role": "user", "content": prompt_text}],
                     "response_format": {"type": "json_object"},
