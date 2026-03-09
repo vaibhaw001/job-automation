@@ -474,7 +474,15 @@ TEXT TO ANALYZE:
     try:
         response_text = call_ai(PROMPT + "\n\n" + txt_content).strip()
         parsed_output = extract_json(response_text)
-        jobs = parsed_output.get("jobs", [])
+        
+        # Strictly filter out any jobs that do not contain a genuinely valid email address
+        raw_jobs = parsed_output.get("jobs", [])
+        jobs = []
+        for job in raw_jobs:
+            email = str(job.get("apply_email", "")).lower().strip()
+            # Must contain an @ and a ., and must not be obvious placeholder text
+            if "@" in email and "." in email and "not" not in email and "none" not in email:
+                jobs.append(job)
 
         # Add job_id and match_score
         for idx, job in enumerate(jobs, start=1):
