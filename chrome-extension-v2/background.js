@@ -202,7 +202,7 @@ async function finishScan() {
 
         // Navigate same tab to RoleMatch AI (instead of closing)
         if (autoUpload) {
-            await chrome.tabs.update(scanTabId, { url: 'http://localhost:8501' });
+            await chrome.tabs.update(scanTabId, { url: 'https://rolematch.vercel.app/login.html' });
         }
 
     } catch (e) {
