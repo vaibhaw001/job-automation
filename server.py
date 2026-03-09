@@ -398,10 +398,9 @@ TEXT TO ANALYZE:
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "openrouter/auto",
+                    "model": "stepfun/step-3.5-flash:free",
                     "temperature": 0,
                     "messages": [{"role": "user", "content": prompt_text}],
-                    "response_format": {"type": "json_object"},
                 },
                 timeout=180,
             )
