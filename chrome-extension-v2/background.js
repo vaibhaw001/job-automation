@@ -47,10 +47,9 @@ async function startScan(customUrl = '') {
             ? SITES.other(currentKeyword, customUrl)
             : SITES[currentSite](currentKeyword);
 
-        // Get the current active tab and update it with the job site URL
-        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        await chrome.tabs.update(currentTab.id, { url });
-        scanTabId = currentTab.id;
+        // Create a new background tab for scanning so the user can keep browsing
+        const newTab = await chrome.tabs.create({ url, active: false }); // We'll make it active initially, or false. Wait, user said "background scrolling". Let's make it active: false.
+        scanTabId = newTab.id;
 
         sendStatus('Waiting for page to load...');
 
@@ -112,10 +111,8 @@ function waitForPageReady(tabId) {
                     func: () => {
                         // Check if document is ready and has content
                         const ready = document.readyState === 'complete';
-                        const hasContent = document.body && document.body.innerHTML.length > 1000;
-                        // Check if page is still loading (spinners, etc)
-                        const noLoading = !document.querySelector('.loading, .spinner, [aria-busy="true"]');
-                        return ready && hasContent && noLoading;
+                        const hasContent = document.body && document.body.innerText.length > 500;
+                        return ready && hasContent;
                     }
                 });
 
@@ -218,9 +215,9 @@ async function finishScan() {
         sendStatus('✅ Saved: ' + filename);
         chrome.runtime.sendMessage({ type: 'complete', filename });
 
-        // Navigate same tab to RoleMatch AI (instead of closing)
+        // Navigate same tab to RoleMatch AI and make it active
         if (autoUpload) {
-            await chrome.tabs.update(scanTabId, { url: 'https://rolematch.vercel.app/login.html' });
+            await chrome.tabs.update(scanTabId, { url: 'https://rolematch.vercel.app/login.html', active: true });
         }
 
     } catch (e) {
@@ -233,57 +230,13 @@ async function finishScan() {
 
 // Content extractor (injected)
 function extractContent(site) {
+    // Collect ALL visible text on the page natively as the user requested
     let content = `Job Scan Results\nPlatform: ${site}\nDate: ${new Date().toLocaleString()}\n${'='.repeat(50)}\n\n`;
 
-    if (site === 'linkedin') {
-        document.querySelectorAll('.feed-shared-update-v2, .update-components-text').forEach((el, i) => {
-            const text = el.innerText?.trim();
-            if (text && text.length > 50) {
-                content += `[${i + 1}]\n${text.slice(0, 2000)}\n\n---\n\n`;
-            }
-        });
-    } else if (site === 'internshala') {
-        document.querySelectorAll('.individual_internship, .internship_meta').forEach((el, i) => {
-            const title = el.querySelector('.profile, h3')?.innerText || '';
-            const company = el.querySelector('.company_name, .company')?.innerText || '';
-            const location = el.querySelector('.location_link, .locations')?.innerText || '';
-            const stipend = el.querySelector('.stipend, .salary')?.innerText || '';
-            if (title) {
-                content += `[${i + 1}] ${title}\nCompany: ${company}\nLocation: ${location}\nStipend: ${stipend}\n\n---\n\n`;
-            }
-        });
-    } else if (site === 'indeed') {
-        document.querySelectorAll('.job_seen_beacon, .jobsearch-ResultsList > li').forEach((el, i) => {
-            const title = el.querySelector('.jobTitle, h2')?.innerText || '';
-            const company = el.querySelector('.companyName, .company')?.innerText || '';
-            const location = el.querySelector('.companyLocation, .location')?.innerText || '';
-            const salary = el.querySelector('.salary-snippet, .salary')?.innerText || '';
-            if (title) {
-                content += `[${i + 1}] ${title}\nCompany: ${company}\nLocation: ${location}\nSalary: ${salary}\n\n---\n\n`;
-            }
-        });
-    } else if (site === 'naukri') {
-        document.querySelectorAll('.jobTuple, article.jobTupleHeader').forEach((el, i) => {
-            const title = el.querySelector('.title, .jobTitle')?.innerText || '';
-            const company = el.querySelector('.companyInfo, .company')?.innerText || '';
-            const exp = el.querySelector('.experience, .exp')?.innerText || '';
-            const salary = el.querySelector('.salary, .sal')?.innerText || '';
-            const location = el.querySelector('.location, .loc')?.innerText || '';
-            if (title) {
-                content += `[${i + 1}] ${title}\nCompany: ${company}\nExp: ${exp}\nSalary: ${salary}\nLocation: ${location}\n\n---\n\n`;
-            }
-        });
-    } else {
-        // Generic extraction
-        document.querySelectorAll('article, .job, .listing, .result, .card').forEach((el, i) => {
-            const text = el.innerText?.trim();
-            if (text && text.length > 30) {
-                content += `[${i + 1}]\n${text.slice(0, 1500)}\n\n---\n\n`;
-            }
-        });
-    }
+    // Fall back to just dumping everything in the DOM body to be 100% sure we get ALL the text
+    content += document.body.innerText || 'No content found';
 
-    return content || 'No content found';
+    return content;
 }
 
 // Upload to RoleMatch AI via localStorage
