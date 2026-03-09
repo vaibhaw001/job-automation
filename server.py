@@ -375,7 +375,8 @@ Rules for `email_body_draft`:
 - Keep paragraphs short and readable
 - Do NOT exaggerate, invent skills, or fabricate experience
 - Ensure proper grammar and professional formatting
-- IMPORTANT: End email with "Yours sincerely," followed by the applicant's name: "{user_name_display}"
+- IMPORTANT: Use explicit `\n\n` characters to separate paragraphs.
+- IMPORTANT: Always add a blank line before the sign-off. The end of the email MUST look exactly like this: "\n\nYours sincerely,\n{user_name_display}"
 
 Additional instructions:
 - Output JSON ONLY
