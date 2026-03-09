@@ -145,8 +145,26 @@ function startScroll() {
     window._scrolling = true;
     const scroll = () => {
         if (!window._scrolling) return;
-        window.scrollBy(0, 200);
-        setTimeout(scroll, 300);
+
+        // Scroll the main window
+        window.scrollBy(0, 500);
+
+        // Handle sites with internal scroll panes
+        const panes = [
+            document.documentElement,
+            document.body,
+            document.querySelector('.jobs-search-results-list'), // LinkedIn old
+            document.querySelector('.scaffold-layout__list'), // LinkedIn new
+            document.querySelector('.jobsearch-LeftPane') // Indeed
+        ];
+
+        for (const pane of panes) {
+            if (pane) {
+                try { pane.scrollTop += 500; } catch (e) { }
+            }
+        }
+
+        setTimeout(scroll, 500);
     };
     scroll();
 }
