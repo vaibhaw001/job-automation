@@ -326,17 +326,7 @@ def analyze_jobs():
     if not txt_content:
         return jsonify({"success": False, "error": "No job text to analyze. Upload a .txt file first."}), 400
 
-    default_email_template = """Dear Hiring Manager,
-
-I am writing to express my strong interest in the [Job Title] position at [Company Name]. With my background and skill set, I am confident I can bring value to your team and contribute to your ongoing success.
-
-I am particularly drawn to this opportunity because of the requirements outlined in the job description, which align perfectly with my recent experiences. 
-
-Please find my resume attached for your review. I would welcome the opportunity to discuss how my skills align with the needs of your team.
-
-Thank you for your time and consideration."""
-    
-    user_sample_email_safe = sample_email if sample_email.strip() else default_email_template
+    user_sample_email_safe = sample_email if sample_email.strip() else "Professional email"
     user_name_display = user_name if user_name else "[Your Name]"
 
     PROMPT = f"""
@@ -354,8 +344,6 @@ Your tasks:
    - Extract ONLY factual information explicitly present in the text
    - Generate a professional, polite, concise email draft by FOLLOWING the STYLE and STRUCTURE of the template below
    - Ensure emails are human-like, coherent, and well-formatted
-   - ALWAYS draft a full email body for every single job. Never leave it empty or say "Not provided".
-   - The drafted email MUST explicitly mention the `company` name and the `job_title` being applied for. If the company name is missing, use "Hiring Team".
 
 Strict JSON output schema:
 
@@ -371,7 +359,7 @@ Strict JSON output schema:
       "jd_summary": string,
       "description": string,
       "email_subject": string,
-      "email_body_draft": string (MUST be a complete email explicitly mentioning the company name)
+      "email_body_draft": string
     }}
   ]
 }}
@@ -383,7 +371,7 @@ Rules for `email_body_draft`:
 {user_sample_email_safe}
 \"\"\"
 - Preserve tone and structure
-- Lightly customize for each job using job title, company name, skills, and JD summary
+- Lightly customize for each job using job title, skills, and JD summary
 - Keep paragraphs short and readable
 - Do NOT exaggerate, invent skills, or fabricate experience
 - Ensure proper grammar and professional formatting
@@ -411,7 +399,6 @@ TEXT TO ANALYZE:
                 },
                 json={
                     "model": "openrouter/auto",
-                    "max_tokens": 8000,
                     "temperature": 0,
                     "messages": [{"role": "user", "content": prompt_text}],
                     "response_format": {"type": "json_object"},
@@ -446,7 +433,7 @@ TEXT TO ANALYZE:
         # Try parsing directly first
         try:
             return json.loads(text)
-        except json.JSONDecodeError as direct_err:
+        except json.JSONDecodeError:
             pass
         # Try fixing truncated JSON by closing unclosed brackets
         open_braces = text.count('{') - text.count('}')
@@ -459,34 +446,12 @@ TEXT TO ANALYZE:
             text = text[:last_complete + 1]
         text += ']' * max(0, open_brackets) + '}' * max(0, open_braces)
         text = _re.sub(r',\s*([}\]])', r'\1', text)
-        
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as repr_err:
-            print("\n----- RAW AI TEXT -----")
-            print(text)
-            print("-----------------------\n")
-            raise json.JSONDecodeError(
-                f"{str(repr_err)} | Raw text start: {text[:100]}", 
-                repr_err.doc, repr_err.pos
-            )
+        return json.loads(text)
 
     try:
         response_text = call_ai(PROMPT + "\n\n" + txt_content).strip()
         parsed_output = extract_json(response_text)
-        
-        # Strictly filter out any jobs that do not contain a genuinely valid email address
-        import re
-        raw_jobs = parsed_output.get("jobs", [])
-        jobs = []
-        # Basic email validation regex to prevent URLs or random strings from slipping in
-        email_regex = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-        
-        for job in raw_jobs:
-            email = str(job.get("apply_email", "")).lower().strip()
-            # Must strictly match email pattern and not be a placeholder
-            if email_regex.match(email) and not email.startswith("http") and not email.startswith("www"):
-                jobs.append(job)
+        jobs = parsed_output.get("jobs", [])
 
         # Add job_id and match_score
         for idx, job in enumerate(jobs, start=1):
