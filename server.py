@@ -344,6 +344,8 @@ Your tasks:
    - Extract ONLY factual information explicitly present in the text
    - Generate a professional, polite, concise email draft by FOLLOWING the STYLE and STRUCTURE of the template below
    - Ensure emails are human-like, coherent, and well-formatted
+   - ALWAYS draft a full email body for every single job. Never leave it empty or say "Not provided".
+   - The drafted email MUST explicitly mention the `company` name and the `job_title` being applied for. If the company name is missing, use "Hiring Team".
 
 Strict JSON output schema:
 
@@ -359,7 +361,7 @@ Strict JSON output schema:
       "jd_summary": string,
       "description": string,
       "email_subject": string,
-      "email_body_draft": string
+      "email_body_draft": string (MUST be a complete email explicitly mentioning the company name)
     }}
   ]
 }}
@@ -371,7 +373,7 @@ Rules for `email_body_draft`:
 {user_sample_email_safe}
 \"\"\"
 - Preserve tone and structure
-- Lightly customize for each job using job title, skills, and JD summary
+- Lightly customize for each job using job title, company name, skills, and JD summary
 - Keep paragraphs short and readable
 - Do NOT exaggerate, invent skills, or fabricate experience
 - Ensure proper grammar and professional formatting
@@ -433,7 +435,7 @@ TEXT TO ANALYZE:
         # Try parsing directly first
         try:
             return json.loads(text)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as direct_err:
             pass
         # Try fixing truncated JSON by closing unclosed brackets
         open_braces = text.count('{') - text.count('}')
@@ -446,7 +448,17 @@ TEXT TO ANALYZE:
             text = text[:last_complete + 1]
         text += ']' * max(0, open_brackets) + '}' * max(0, open_braces)
         text = _re.sub(r',\s*([}\]])', r'\1', text)
-        return json.loads(text)
+        
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as repr_err:
+            print("\n----- RAW AI TEXT -----")
+            print(text)
+            print("-----------------------\n")
+            raise json.JSONDecodeError(
+                f"{str(repr_err)} | Raw text start: {text[:100]}", 
+                repr_err.doc, repr_err.pos
+            )
 
     try:
         response_text = call_ai(PROMPT + "\n\n" + txt_content).strip()
