@@ -38,7 +38,7 @@ try:
 except ImportError:
     DOCX_AVAILABLE = False
 
-# HTTP for OpenRouter API
+# HTTP for Groq API
 import requests as http_requests
 
 load_dotenv()
@@ -117,7 +117,7 @@ def extract_name_from_text(text):
 # ── Health check ──
 @app.route('/api/health', methods=['GET'])
 def health():
-    return jsonify({"status": "ok", "gemini_key_loaded": bool(os.getenv("GEMINI_API_KEY", ""))})
+    return jsonify({"status": "ok", "groq_key_loaded": bool(os.getenv("GROQ_API_KEY", ""))})
 
 
 # ── Config endpoints ──
@@ -281,12 +281,12 @@ def set_sample_email():
     return jsonify({"success": True})
 
 
-# ── Analyze jobs with AI (OpenRouter → Gemini fallback) ──
+# ── Analyze jobs with AI (Groq) ──
 @app.route('/api/analyze', methods=['POST'])
 def analyze_jobs():
-    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
-    if not openrouter_key:
-        return jsonify({"success": False, "error": "OpenRouter API key not configured in .env"}), 400
+    groq_key = os.getenv("GROQ_API_KEY", "")
+    if not groq_key:
+        return jsonify({"success": False, "error": "Groq API key not configured in .env"}), 400
 
     data = request.json or {}
     txt_content = data.get("txt_content", "") or session.get("txt_content", "")
@@ -389,17 +389,17 @@ TEXT TO ANALYZE:
 """
 
     def call_ai(prompt_text, retries=3):
-        """Call OpenRouter API with JSON mode."""
+        """Call Groq API with JSON mode."""
         import time
         for attempt in range(retries + 1):
             resp = http_requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {openrouter_key}",
+                    "Authorization": f"Bearer {groq_key}",
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "openrouter/auto",
+                    "model": "llama-3.3-70b-versatile",
                     "temperature": 0,
                     "messages": [{"role": "user", "content": prompt_text}],
                 },
@@ -670,7 +670,7 @@ def get_session():
         "sender_email": session.get("sender_email", ""),
         "jobs_count": len(session.get("jobs", [])),
         "sample_email_set": bool(session.get("sample_email")),
-        "gemini_key_loaded": bool(os.getenv("OPENROUTER_API_KEY", "")),
+        "groq_key_loaded": bool(os.getenv("GROQ_API_KEY", "")),
         "sheet_url": session.get("sheet_url", ""),
         "sheets_available": SHEETS_AVAILABLE,
     })

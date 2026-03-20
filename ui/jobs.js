@@ -112,8 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 senderEmail = sessionData.sender_email;
                 if (senderEmailInput) senderEmailInput.value = senderEmail;
             }
-            if (!sessionData.gemini_key_loaded && analyzeStatus) {
-                analyzeStatus.textContent = '⚠️ OpenRouter API key not found in .env file';
+            if (!sessionData.groq_key_loaded && analyzeStatus) {
+                analyzeStatus.textContent = '⚠️ Groq API key not found in .env file';
                 analyzeStatus.style.color = '#f87171';
             }
         }

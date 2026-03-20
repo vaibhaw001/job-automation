@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API_BASE}/api/health`);
             const data = await res.json();
             if (data.status === 'ok') {
-                console.log('✅ Backend connected. Gemini key:', data.gemini_key_loaded ? 'loaded' : 'missing');
+                console.log('✅ Backend connected. Groq key:', data.groq_key_loaded ? 'loaded' : 'missing');
             }
         } catch (e) {
             console.warn('⚠️ Backend not reachable at', API_BASE);
