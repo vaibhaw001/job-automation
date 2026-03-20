@@ -32,7 +32,7 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 ### **🤖 Web App (RoleMatch AI)**
 - **Supabase Authentication**: Secure user login/sign-up and session management natively using Supabase.
 - **Supabase Cloud Database**: Stores your strictly managed sent-email telemetry using Row Level Security (RLS) keeping everyone’s application history private.
-- **AI-powered job analysis**: Uses **Groq** (and Google Gemini fallback) to extract key details and match roles.
+- **AI-powered job analysis**: Uses **OpenRouter** (and Google Gemini fallback) to extract key details and match roles.
 - **Smart filtering**: Automatically detects valid emails and jobs.
 - **Professional email drafting**: Generates polished application emails.
 - **Resume attachment**: Send your resume with applications. Auto-converts images & documents to PDF.
@@ -47,7 +47,7 @@ Perfect for job seekers who want to **save hours of manual work** while applying
 | **Backend**   | Python (Flask)                               |
 | **Frontend** | HTML, CSS, Vanilla JavaScript                    |
 | **Database & Auth** | Supabase (PostgreSQL)            |
-| **AI Integration** | Groq API / Google Gemini                  |
+| **AI Integration** | OpenRouter API / Google Gemini                  |
 | **Chrome Extension** | Manifest V3, JavaScript, HTML/CSS       |
 
 **System Requirements:**
@@ -78,7 +78,7 @@ Perfect for job seekers who want to **save hours of manual work** while applying
    Create a `.env` file containing your keys (API & Supabase configurations):
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
-   GROQ_API_KEY=your_groq_api_key_here
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
    GOOGLE_SERVICE_ACCOUNT_JSON=rolematch-ai-...json
    SUPABASE_URL=your_supabase_project_url
    SUPABASE_ANON_KEY=your_supabase_anon_jwt_key
