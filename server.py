@@ -337,10 +337,11 @@ Your input text may contain multiple, unstructured job postings scraped from Lin
 Your tasks:
 
 1. Identify ALL distinct job postings in the input text.
-2. FILTER OUT any job that:
-   - Does NOT provide a valid apply email
+2. FILTER OUT AND DO NOT INCLUDE any job that:
+   - Does NOT explicitly provide a valid email address (like name@domain.com) inside the text itself.
+   - Mentions "Not provided", "N/A", or only has an apply link/website. 
    - Is located OUTSIDE India
-3. For each remaining job:
+3. For each remaining job (which MUST have a valid email):
    - Extract ONLY factual information explicitly present in the text
    - Generate a professional, polite, concise email draft by FOLLOWING the STYLE and STRUCTURE of the template below
    - Ensure emails are human-like, coherent, and well-formatted
@@ -455,7 +456,14 @@ TEXT TO ANALYZE:
         
         response_text = response_text.strip()
         parsed_output = extract_json(response_text)
-        jobs = parsed_output.get("jobs", [])
+        _raw_jobs = parsed_output.get("jobs", [])
+        
+        # Programmatically filter out any job without a valid-looking email
+        jobs = []
+        for j in _raw_jobs:
+            email = str(j.get("apply_email", "")).strip().lower()
+            if "@" in email and "." in email and "not" not in email and " " not in email:
+                jobs.append(j)
 
         # Add job_id and match_score
         for idx, job in enumerate(jobs, start=1):
