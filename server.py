@@ -399,7 +399,7 @@ TEXT TO ANALYZE:
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "stepfun/step-3.5-flash:free",
+                    "model": "openrouter/auto",
                     "temperature": 0,
                     "messages": [{"role": "user", "content": prompt_text}],
                 },
@@ -449,7 +449,11 @@ TEXT TO ANALYZE:
         return json.loads(text)
 
     try:
-        response_text = call_ai(PROMPT + "\n\n" + txt_content).strip()
+        response_text = call_ai(PROMPT + "\n\n" + txt_content)
+        if not response_text:
+            return jsonify({"success": False, "error": "AI model returned an empty response. It may be overloaded. Please try again."}), 500
+        
+        response_text = response_text.strip()
         parsed_output = extract_json(response_text)
         jobs = parsed_output.get("jobs", [])
 
@@ -473,8 +477,8 @@ JOBS:
 Output JSON only: {{"scores": [{{"job_id": 1, "score": 85}}, ...]}}
 Sort by score descending. Score ALL jobs.
 """
-                score_text = call_ai(score_prompt).strip()
-                score_result = extract_json(score_text)
+                score_text = call_ai(score_prompt)
+                score_result = extract_json(score_text.strip() if score_text else "{}")
                 scores = {s["job_id"]: s["score"] for s in score_result.get("scores", [])}
 
                 for job in jobs:
