@@ -108,20 +108,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Also check server session (overrides localStorage if set)
         if (sessionData) {
-            if (sessionData.credentials_set && sessionData.sender_email) {
-                senderEmail = sessionData.sender_email;
-                if (senderEmailInput) senderEmailInput.value = senderEmail;
-            }
             if (!sessionData.openrouter_key_loaded && analyzeStatus) {
                 analyzeStatus.textContent = '⚠️ OpenRouter API key not found in .env file';
                 analyzeStatus.style.color = '#f87171';
             }
         }
 
-        // Try to load existing jobs from server
-        const jobsData = await fetchJSON('/api/jobs');
-        if (jobsData?.jobs?.length) {
-            allJobs = jobsData.jobs;
+        // Try to load existing jobs from local storage
+        const savedJobs = localStorage.getItem('analyzed_jobs');
+        if (savedJobs) {
+            try {
+                allJobs = JSON.parse(savedJobs);
+            } catch(e){}
         }
 
         renderAll();
@@ -271,7 +269,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        sample_email: sampleEmailInput ? sampleEmailInput.value : ''
+                        sample_email: sampleEmailInput ? sampleEmailInput.value : '',
+                        txt_content: localStorage.getItem('txt_content') || '',
+                        resume_text: localStorage.getItem('resume_text') || '',
+                        user_name: JSON.parse(localStorage.getItem('rolematch_user') || '{}').name || ''
                     })
                 });
 
@@ -288,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 allJobs = data.jobs;
+                localStorage.setItem('analyzed_jobs', JSON.stringify(allJobs));
                 renderAll();
 
                 if (analyzeStatus) {
@@ -566,7 +568,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     ...payload,
                     sender_email: senderEmail || (senderEmailInput ? senderEmailInput.value : ''),
-                    sender_password: senderPassword || (senderPassInput ? senderPassInput.value : '')
+                    sender_password: senderPassword || (senderPassInput ? senderPassInput.value : ''),
+                    resume_path: localStorage.getItem('resume_path') || '',
+                    resume_original_name: localStorage.getItem('resume_original_name') || ''
                 })
             });
             const result = await res.json();

@@ -51,21 +51,7 @@ CSV_FILE = "job_tracker.csv"
 UPLOAD_DIR = "/tmp/uploads" if os.environ.get("VERCEL") else "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# ── In-memory session store (simple for single user) ──
-session = {
-    "resume_text": "",
-    "resume_name": "",
-    "full_name": "",
-    "resume_path": None,
-    "resume_original_name": "",
-    "sender_email": "",
-    "sender_app_password": "",
-    "sample_email": "",
-    "jobs": [],
-    "txt_content": "",
-    "txt_filename": "",
-}
-
+# ── Removed in-memory single-user session store (now stateless via frontend / local storage) ──
 
 # =========================
 # STATIC FILE SERVING (UI)
@@ -139,39 +125,10 @@ def login():
     if not email or not password:
         return jsonify({"success": False, "error": "Email and password are required"}), 400
     
-    # Clear previous session data so new login starts fresh
-    session["resume_text"] = ""
-    session["resume_name"] = ""
-    session["resume_path"] = None
-    session["resume_original_name"] = ""
-    session["sample_email"] = ""
-    session["jobs"] = []
-    session["txt_content"] = ""
-    session["txt_filename"] = ""
-    
-    # Save credentials to session for email sending
-    session["sender_email"] = email
-    session["sender_app_password"] = password
-    if full_name:
-        session["full_name"] = full_name
-
-    # Supabase handles its own session on frontend
-    sheet_url = None
-
     return jsonify({"success": True, "email": email, "sheet_url": sheet_url})
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
-    session["resume_text"] = ""
-    session["resume_name"] = ""
-    session["resume_path"] = None
-    session["resume_original_name"] = ""
-    session["sender_email"] = ""
-    session["sender_app_password"] = ""
-    session["sample_email"] = ""
-    session["jobs"] = []
-    session["txt_content"] = ""
-    session["txt_filename"] = ""
     return jsonify({"success": True})
 
 
@@ -181,11 +138,7 @@ def set_credentials():
     data = request.json or {}
     email = data.get("email", "")
     full_name = data.get("full_name", "")
-    session["sender_email"] = email
-    session["sender_app_password"] = data.get("app_password", "")
-    if full_name:
-        session["full_name"] = full_name
-
+    # Session completely managed statelessly now. 
     sheet_url = None
 
 
@@ -202,13 +155,11 @@ def upload_resume():
     if not file.filename:
         return jsonify({"success": False, "error": "Empty filename"}), 400
 
-    # Save the file
+    import uuid
     safe_name = file.filename.replace(' ', '_')
-    save_path = os.path.join(UPLOAD_DIR, f"resume_{safe_name}")
+    unique_id = str(uuid.uuid4())[:8]
+    save_path = os.path.join(UPLOAD_DIR, f"resume_{unique_id}_{safe_name}")
     file.save(save_path)
-
-    session["resume_path"] = save_path
-    session["resume_original_name"] = file.filename
 
     # Extract text from resume
     ext = file.filename.rsplit('.', 1)[-1].lower()
@@ -226,14 +177,16 @@ def upload_resume():
         except:
             resume_text = ""
 
-    session["resume_text"] = resume_text
-    session["resume_name"] = extract_name_from_text(resume_text)
+    resume_name = extract_name_from_text(resume_text)
 
     return jsonify({
         "success": True,
         "filename": file.filename,
         "size": os.path.getsize(save_path),
-        "text_preview": resume_text[:500] if resume_text else ""
+        "text_preview": resume_text[:500] if resume_text else "",
+        "resume_text": resume_text,
+        "resume_name": resume_name,
+        "resume_path": save_path
     })
 
 
@@ -250,8 +203,6 @@ def upload_txt():
         return jsonify({"success": False, "error": "Empty filename"}), 400
 
     content = file.read().decode('utf-8', errors='ignore')
-    session["txt_content"] = content
-    session["txt_filename"] = file.filename
 
     # Also save to scanned_jobs folder
     scanned_dir = "/tmp/scanned_jobs" if os.environ.get("VERCEL") else "scanned_jobs"
@@ -276,8 +227,7 @@ def upload_txt():
 # ── Set sample email template ──
 @app.route('/api/sample-email', methods=['POST'])
 def set_sample_email():
-    data = request.json or {}
-    session["sample_email"] = data.get("template", "")
+    # No operation: frontend saves it now.
     return jsonify({"success": True})
 
 
@@ -289,10 +239,10 @@ def analyze_jobs():
         return jsonify({"success": False, "error": "OpenRouter API key not configured in .env"}), 400
 
     data = request.json or {}
-    txt_content = data.get("txt_content", "") or session.get("txt_content", "")
-    sample_email = data.get("sample_email", "") or session.get("sample_email", "Professional email")
-    resume_text = session.get("resume_text", "")
-    user_name = session.get("full_name", "") or session.get("resume_name", "")
+    txt_content = data.get("txt_content", "")
+    sample_email = data.get("sample_email", "Professional email")
+    resume_text = data.get("resume_text", "")
+    user_name = data.get("user_name", "")
 
     # Fallback to load from disk if session is empty (e.g. server reset)
     import glob
@@ -393,26 +343,40 @@ TEXT TO ANALYZE:
         """Call OpenRouter API with JSON mode."""
         import time
         for attempt in range(retries + 1):
-            resp = http_requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {openrouter_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": "arcee-ai/trinity-large-preview:free",
-                    "temperature": 0,
-                    "messages": [{"role": "user", "content": prompt_text}],
-                },
-                timeout=180,
-            )
-            if resp.status_code == 429 and attempt < retries:
-                wait = 10 * (attempt + 1)
-                print(f"[Wait] Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
-                time.sleep(wait)
-                continue
-            resp.raise_for_status()
-            return resp.json()["choices"][0]["message"]["content"]
+            try:
+                resp = http_requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {openrouter_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": "arcee-ai/trinity-large-preview:free",
+                        "temperature": 0,
+                        "messages": [{"role": "user", "content": prompt_text}],
+                    },
+                    timeout=180,
+                )
+                
+                if resp.status_code == 429 and attempt < retries:
+                    wait = 10 * (attempt + 1)
+                    print(f"[Wait] Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
+                    time.sleep(wait)
+                    continue
+                    
+                resp.raise_for_status()
+                data = resp.json()
+                
+                if "error" in data and "message" in data["error"]:
+                    raise Exception(data["error"]["message"])
+                    
+                return data["choices"][0]["message"]["content"]
+            except Exception as e:
+                print(f"[Wait] API error: {e}. Retry {attempt + 1}/{retries}...")
+                if attempt < retries:
+                    time.sleep(5 * (attempt + 1))
+                    continue
+                raise e
 
     def extract_json(text):
         """Robustly extract and repair JSON from AI response text."""
@@ -500,7 +464,7 @@ Sort by score descending. Score ALL jobs.
             except Exception as e:
                 print(f"Scoring error: {e}")
 
-        session["jobs"] = jobs
+                # Removed global session list of jobs
 
         return jsonify({
             "success": True,
@@ -514,14 +478,10 @@ Sort by score descending. Score ALL jobs.
         return jsonify({"success": False, "error": f"AI analysis failed: {str(e)}"}), 500
 
 
-# ── Get current jobs ──
-@app.route('/api/jobs', methods=['GET'])
-def get_jobs():
+    # Rendered entirely by local frontend storage now
     return jsonify({
         "success": True,
-        "jobs": session.get("jobs", []),
-        "has_resume": bool(session.get("resume_text")),
-        "candidate_name": session.get("resume_name", "")
+        "jobs": request.json.get("jobs", []) if request.is_json else []
     })
 
 
@@ -547,8 +507,8 @@ def send_email():
     job_title = data.get("job_title", "")
     company = data.get("company", "")
 
-    sender_email = data.get("sender_email", "") or session.get("sender_email", "")
-    sender_password = data.get("sender_password", "") or session.get("sender_app_password", "")
+    sender_email = data.get("sender_email", "")
+    sender_password = data.get("sender_password", "")
 
     if not sender_email or not sender_password:
         return jsonify({"success": False, "error": "Sender email credentials not configured. Go to Settings."}), 400
@@ -566,12 +526,11 @@ def send_email():
     msg["Subject"] = subject
     msg.set_content(body)
 
-    # Attach resume if available
-    resume_path = session.get("resume_path")
+    resume_path = data.get("resume_path")
     if resume_path and os.path.exists(resume_path):
         with open(resume_path, 'rb') as f:
             resume_data = f.read()
-            resume_name = session.get("resume_original_name", "resume.pdf")
+            resume_name = data.get("resume_original_name", "resume.pdf")
             ext = resume_name.rsplit('.', 1)[-1].lower() if '.' in resume_name else 'pdf'
             mime_map = {
                 'pdf': ('application', 'pdf'),
@@ -612,18 +571,13 @@ def sheet_url_endpoint():
     if not user_email:
         return jsonify({"success": False, "error": "No user logged in"}), 400
 
-    # Check cache first
-    cached_url = session.get("sheet_url")
-    if cached_url:
-        return jsonify({"success": True, "sheet_url": cached_url, "sheets_available": SHEETS_AVAILABLE})
-
+    # Cache removed from backend, managed by frontend args if needed
     if not SHEETS_AVAILABLE:
         return jsonify({"success": False, "error": "Google Sheets not configured", "sheets_available": False})
 
     try:
         url = get_sheet_url(user_email)
         if url:
-            session["sheet_url"] = url
             return jsonify({"success": True, "sheet_url": url, "sheets_available": True})
         else:
             return jsonify({"success": False, "error": "No sheet found. Send an email to create one.", "sheets_available": True})
@@ -642,7 +596,6 @@ def init_sheet():
 
     try:
         _, url, is_new = get_or_create_sheet(user_email)
-        session["sheet_url"] = url
         return jsonify({"success": True, "sheet_url": url, "is_new": is_new})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -667,19 +620,9 @@ def sheet_data_endpoint():
 # ── Session info ──
 @app.route('/api/session', methods=['GET'])
 def get_session():
+    # Now totally handled by localStorage in the UI directly, so we just return config.
     return jsonify({
-        "resume_uploaded": bool(session.get("resume_path")),
-        "resume_name": session.get("resume_original_name", ""),
-        "candidate_name": session.get("full_name", "") or session.get("resume_name", ""),
-        "txt_uploaded": bool(session.get("txt_content")),
-        "txt_filename": session.get("txt_filename", ""),
-        "txt_char_count": len(session.get("txt_content", "")),
-        "credentials_set": bool(session.get("sender_email")),
-        "sender_email": session.get("sender_email", ""),
-        "jobs_count": len(session.get("jobs", [])),
-        "sample_email_set": bool(session.get("sample_email")),
         "openrouter_key_loaded": bool(os.getenv("OPENROUTER_API_KEY", "")),
-        "sheet_url": session.get("sheet_url", ""),
         "sheets_available": SHEETS_AVAILABLE,
     })
 

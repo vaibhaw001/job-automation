@@ -115,6 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
             resumeDropZone.style.display = 'none';
 
             showStatus(resumeStatus, 'success', 'Resume uploaded successfully!');
+            
+            // Local Storage Saving of Files
+            localStorage.setItem('resume_text', data.resume_text || '');
+            localStorage.setItem('resume_path', data.resume_path || '');
+            localStorage.setItem('resume_name', data.resume_name || '');
+            localStorage.setItem('resume_original_name', file.name || '');
+
             updateChip(resumeChip, true, 'Resume');
             updateContinueBtn();
 
@@ -177,6 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
             txtPreview.classList.add('visible');
             txtDropZone.style.display = 'none';
             showStatus(txtStatus, 'success', `Job scrape uploaded! ${data.char_count.toLocaleString()} characters.`);
+            
+            // Local Storage Saving of Files
+            localStorage.setItem('txt_content', await file.text());
+            localStorage.setItem('txt_filename', file.name);
+            localStorage.setItem('txt_char_count', data.char_count);
+
             updateChip(txtChip, true, 'Job Scrape');
             updateContinueBtn();
 
@@ -215,25 +228,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             // If resume already uploaded in this session, show it
-            if (data.resume_uploaded) {
-                resumeFileName.textContent = data.resume_name;
+            if (localStorage.getItem('resume_text') && localStorage.getItem('resume_original_name')) {
+                const rName = localStorage.getItem('resume_original_name');
+                resumeFileName.textContent = rName;
                 resumeFileSize.textContent = 'Previously uploaded';
                 resumePreview.classList.add('visible');
                 resumeDropZone.style.display = 'none';
-                resumeFile = { name: data.resume_name }; // placeholder
+                resumeFile = { name: rName }; // placeholder
                 updateChip(resumeChip, true, 'Resume');
-                showStatus(resumeStatus, 'success', `Resume already uploaded: ${data.resume_name}`);
+                showStatus(resumeStatus, 'success', `Resume loaded locally: ${rName}`);
             }
 
             // If txt already uploaded
-            if (data.txt_uploaded) {
-                txtFileName.textContent = data.txt_filename;
-                txtFileSize.textContent = data.txt_char_count.toLocaleString() + ' chars';
+            if (localStorage.getItem('txt_content') && localStorage.getItem('txt_filename')) {
+                const tName = localStorage.getItem('txt_filename');
+                const tCount = localStorage.getItem('txt_char_count') || localStorage.getItem('txt_content').length;
+                txtFileName.textContent = tName;
+                txtFileSize.textContent = parseInt(tCount).toLocaleString() + ' chars';
                 txtPreview.classList.add('visible');
                 txtDropZone.style.display = 'none';
-                txtFile = { name: data.txt_filename }; // placeholder
+                txtFile = { name: tName }; // placeholder
                 updateChip(txtChip, true, 'Job Scrape');
-                showStatus(txtStatus, 'success', `Scrape file already uploaded: ${data.txt_filename}`);
+                showStatus(txtStatus, 'success', `Scrape file loaded locally: ${tName}`);
+                
+                txtContentText.textContent = localStorage.getItem('txt_content').substring(0, 1000) + '...';
+                txtContentPreview.style.display = 'block';
             }
 
             updateContinueBtn();
