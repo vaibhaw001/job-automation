@@ -124,8 +124,7 @@ def login():
     full_name = data.get('full_name', '')
     if not email or not password:
         return jsonify({"success": False, "error": "Email and password are required"}), 400
-    
-    return jsonify({"success": True, "email": email, "sheet_url": sheet_url})
+    return jsonify({"success": True, "email": email, "sheet_url": None})
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
