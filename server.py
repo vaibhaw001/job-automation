@@ -345,49 +345,30 @@ TEXT TO ANALYZE:
 """
 
     def call_ai(prompt_text, retries=4):
-        """Call Gemini API with JSON mode."""
+        """Call Gemini API natively using google.generativeai."""
         import time
+        import google.generativeai as genai
         for attempt in range(retries + 1):
             try:
-                url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-                api_headers = {
-                    "Authorization": f"Bearer {gemini_api_key}",
-                    "Content-Type": "application/json",
-                }
-                model = "gemini-2.0-flash"
-
-                resp = http_requests.post(
-                    url,
-                    headers=api_headers,
-                    json={
-                        "model": model,
-                        "temperature": 0,
-                        "messages": [{"role": "user", "content": prompt_text}],
-                    },
-                    timeout=240,
+                genai.configure(api_key=gemini_api_key)
+                model = genai.GenerativeModel("gemini-2.5-flash")
+                
+                response = model.generate_content(
+                    prompt_text,
+                    generation_config=genai.GenerationConfig(temperature=0),
                 )
                 
-                if resp.status_code == 429:
+                return response.text
+            except Exception as e:
+                err_str = str(e).lower()
+                if "429" in err_str or "quota" in err_str or "rate limit" in err_str:
                     if attempt < retries:
                         wait = 15 * (attempt + 1)
                         print(f"[Wait] Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
                         time.sleep(wait)
                         continue
-                    else:
-                        try:
-                            msg = resp.json().get('error', {}).get('message', '')
-                            raise Exception(f"Google Gemini Free Tier Limit Hit. Please wait a minute before analyzing again. ({msg})")
-                        except Exception as parse_e:
-                            raise Exception("Google Gemini Free Tier Rate Limit hit. Please wait a minute and try again.")
-                    
-                resp.raise_for_status()
-                data = resp.json()
+                    raise Exception("Google Gemini Free Tier Rate Limit hit. Please wait a minute and try again.")
                 
-                if "error" in data and "message" in data["error"]:
-                    raise Exception(data["error"]["message"])
-                    
-                return data["choices"][0]["message"]["content"]
-            except Exception as e:
                 print(f"[Wait] API error: {e}. Retry {attempt + 1}/{retries}...")
                 if attempt < retries:
                     time.sleep(5 * (attempt + 1))
