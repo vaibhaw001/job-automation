@@ -419,12 +419,17 @@ TEXT TO ANALYZE:
         parsed_output = extract_json(response_text)
         _raw_jobs = parsed_output.get("jobs", [])
         
-        # Programmatically filter out any job without a valid-looking email
+        # Programmatically clean and filter out any job without a valid-looking email
         jobs = []
         for j in _raw_jobs:
-            email = str(j.get("apply_email", "")).strip().lower()
-            if "@" in email and "." in email and "not" not in email and " " not in email:
-                jobs.append(j)
+            email_raw = str(j.get("apply_email", "")).strip()
+            if "@" in email_raw:
+                # Basic cleanup: extract just the email part
+                for part in email_raw.split():
+                    if "@" in part:
+                        j["apply_email"] = part.strip("<>().:,").lower()
+                        jobs.append(j)
+                        break
 
         # Add job_id and match_score
         for idx, job in enumerate(jobs, start=1):
