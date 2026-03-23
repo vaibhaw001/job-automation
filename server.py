@@ -48,7 +48,7 @@ CORS(app)
 
 # ── Config ──
 CSV_FILE = "job_tracker.csv"
-UPLOAD_DIR = "/tmp/uploads" if os.environ.get("VERCEL") else "uploads"
+UPLOAD_DIR = "/tmp/uploads" if os.environ.get("VERCEL") else os.path.abspath("uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # ── Removed in-memory single-user session store (now stateless via frontend / local storage) ──
@@ -255,7 +255,7 @@ def analyze_jobs():
                 txt_content = f.read()
 
     if not resume_text:
-        uploads_dir = "/tmp/uploads" if os.environ.get("VERCEL") else "uploads"
+        uploads_dir = UPLOAD_DIR
         resume_files = glob.glob(os.path.join(uploads_dir, "resume_*.*"))
         if resume_files:
             latest = max(resume_files, key=os.path.getmtime)
@@ -527,11 +527,24 @@ def send_email():
     msg["Subject"] = subject
     msg.set_content(body)
 
-    resume_path = data.get("resume_path")
+    resume_path = data.get("resume_path", "").strip()
+    print(f"[DEBUG send-email] resume_path received: {repr(resume_path)}")
+    
+    # Fallback: if path doesn't exist, try to find the most recent uploaded resume
+    if not resume_path or not os.path.exists(resume_path):
+        import glob as _glob
+        candidates = _glob.glob(os.path.join(UPLOAD_DIR, "resume_*.*"))
+        if candidates:
+            resume_path = max(candidates, key=os.path.getmtime)
+            print(f"[DEBUG send-email] Falling back to latest resume on disk: {resume_path}")
+        else:
+            print(f"[DEBUG send-email] No resume found in {UPLOAD_DIR}")
+
     if resume_path and os.path.exists(resume_path):
+        print(f"[DEBUG send-email] Attaching resume: {resume_path}")
         with open(resume_path, 'rb') as f:
             resume_data = f.read()
-            resume_name = data.get("resume_original_name", "resume.pdf")
+            resume_name = data.get("resume_original_name", "") or os.path.basename(resume_path)
             ext = resume_name.rsplit('.', 1)[-1].lower() if '.' in resume_name else 'pdf'
             mime_map = {
                 'pdf': ('application', 'pdf'),
@@ -549,6 +562,9 @@ def send_email():
                 subtype=subtype,
                 filename=resume_name
             )
+    else:
+        print(f"[DEBUG send-email] Skipping attachment — file not found at: {repr(resume_path)}")
+
 
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
