@@ -71,8 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Call backend logout
                 await fetch(`${API_BASE}/api/logout`, { method: 'POST' });
             } catch (err) { }
-            // Clear local credentials/state
+            // Clear local application state (txt and jobs ONLY, keep resume)
+            localStorage.removeItem('txt_content');
+            localStorage.removeItem('txt_name');
+            localStorage.removeItem('txt_chars');
+            localStorage.removeItem('analyzed_jobs');
+            
+            // Clear auth but KEEP AI Key, Gmail Creds, and Resume
             localStorage.removeItem('rolematch_user');
+            
             // Sign out of Supabase
             if (window.sbClient) {
                 await window.sbClient.auth.signOut();
@@ -99,15 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
             sentJobKeys = new Set(trackerData.map(r => (r.company || '') + '|' + (r.job_title || '')));
         }
 
-        // Pre-fill credentials from localStorage (saved at login)
-        const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
-        if (savedUser.email && savedUser.email !== 'google_user') {
-            senderEmail = savedUser.email;
+        // Pre-fill credentials from dedicated storage natively
+        const savedGmail = localStorage.getItem('rolematch_gmail_email') || '';
+        const savedAppPass = localStorage.getItem('rolematch_gmail_pass') || '';
+        if (savedGmail) {
+            senderEmail = savedGmail;
             if (senderEmailInput) senderEmailInput.value = senderEmail;
-            if (savedUser.password) {
-                senderPassword = savedUser.password;
-                if (senderPassInput) senderPassInput.value = senderPassword;
-            }
+        }
+        if (savedAppPass) {
+            senderPassword = savedAppPass;
+            if (senderPassInput) senderPassInput.value = senderPassword;
         }
 
         if (geminiApiKeyInput) {
@@ -197,6 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => { saveCredsBtn.textContent = '💾 Save Credentials'; }, 2000);
                 return;
             }
+
+            // Save Gmail Credentials securely locally
+            localStorage.setItem('rolematch_gmail_email', senderEmail);
+            localStorage.setItem('rolematch_gmail_pass', senderPassword);
 
             const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
             const userFullName = savedUser.name || '';
@@ -409,7 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>
                         <div class="mail-cell">
                             ${isSent
-                    ? `<button class="mail-btn sent" disabled><span class="btn-label">✓ Sent</span></button>`
+                    ? `<button class="mail-btn sent" disabled style="margin-bottom:6px; cursor:default;"><span class="btn-label">✓ Sent</span></button>
+                       <button class="mail-btn send" data-action="send" data-email="${escHtml(job.apply_email)}" style="margin-bottom:6px; background:linear-gradient(135deg, #f59e0b, #d97706);"><span class="btn-label">↻ Resend</span><div class="spinner-sm"></div></button>
+                       <button class="mail-btn preview" data-action="preview" style="border: 1px solid rgba(255,255,255,0.2);"><span class="btn-label">👁 Preview</span></button>`
                     : `<button class="mail-btn send" data-action="send" data-email="${escHtml(job.apply_email)}"><span class="btn-label">📨 Send</span><div class="spinner-sm"></div></button>
                                    <button class="mail-btn preview" data-action="preview"><span class="btn-label">👁 Preview</span></button>`
                 }

@@ -47,8 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Call backend logout
                 await fetch(`${API_BASE}/api/logout`, { method: 'POST' });
             } catch (err) { }
-            // Clear local credentials/state
+            // Clear local application state (txt and jobs ONLY, keep resume)
+            localStorage.removeItem('txt_content');
+            localStorage.removeItem('txt_name');
+            localStorage.removeItem('txt_chars');
+            localStorage.removeItem('analyzed_jobs');
+            
+            // Clear auth but KEEP AI Key, Gmail Creds, and Resume
             localStorage.removeItem('rolematch_user');
+            
             // Sign out of Supabase
             if (window.sbClient) {
                 await window.sbClient.auth.signOut();
