@@ -233,11 +233,12 @@ def set_sample_email():
 # ── Analyze jobs with AI (OpenRouter) ──
 @app.route('/api/analyze', methods=['POST'])
 def analyze_jobs():
-    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
-    if not openrouter_key:
-        return jsonify({"success": False, "error": "OpenRouter API key not configured in .env"}), 400
-
     data = request.json or {}
+    gemini_api_key = data.get("gemini_api_key", "").strip()
+
+    if not gemini_api_key:
+        return jsonify({"success": False, "error": "No Gemini API key provided. Please enter your API key in Settings."}), 400
+
     txt_content = data.get("txt_content", "")
     sample_email = data.get("sample_email", "Professional email")
     resume_text = data.get("resume_text", "")
@@ -343,14 +344,18 @@ TEXT TO ANALYZE:
         import time
         for attempt in range(retries + 1):
             try:
+                url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+                api_headers = {
+                    "Authorization": f"Bearer {gemini_api_key}",
+                    "Content-Type": "application/json",
+                }
+                model = "gemini-2.0-flash"
+
                 resp = http_requests.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {openrouter_key}",
-                        "Content-Type": "application/json",
-                    },
+                    url,
+                    headers=api_headers,
                     json={
-                        "model": "arcee-ai/trinity-large-preview:free",
+                        "model": model,
                         "temperature": 0,
                         "messages": [{"role": "user", "content": prompt_text}],
                     },
@@ -621,7 +626,6 @@ def sheet_data_endpoint():
 def get_session():
     # Now totally handled by localStorage in the UI directly, so we just return config.
     return jsonify({
-        "openrouter_key_loaded": bool(os.getenv("OPENROUTER_API_KEY", "")),
         "sheets_available": SHEETS_AVAILABLE,
     })
 

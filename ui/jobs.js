@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const senderEmailInput = document.getElementById('senderEmail');
     const senderPassInput = document.getElementById('senderAppPassword');
     const saveCredsBtn = document.getElementById('saveCredsBtn');
+
+    const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
+    const saveApiBtn = document.getElementById('saveApiBtn');
+
     const sampleEmailInput = document.getElementById('sampleEmailTemplate');
     const saveSampleBtn = document.getElementById('saveSampleBtn');
 
@@ -106,12 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Also check server session (overrides localStorage if set)
-        if (sessionData) {
-            if (!sessionData.openrouter_key_loaded && analyzeStatus) {
-                analyzeStatus.textContent = '⚠️ OpenRouter API key not found in .env file';
-                analyzeStatus.style.color = '#f87171';
-            }
+        if (geminiApiKeyInput) {
+            geminiApiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
         }
 
         // Try to load existing jobs from local storage
@@ -223,6 +223,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (saveApiBtn) {
+        saveApiBtn.addEventListener('click', () => {
+            const val = geminiApiKeyInput.value.trim();
+            localStorage.setItem('gemini_api_key', val);
+            saveApiBtn.textContent = '✓ Saved!';
+            saveApiBtn.style.background = 'linear-gradient(135deg, #059669, #34d399)';
+            setTimeout(() => {
+                saveApiBtn.textContent = '💾 Save API Key';
+                saveApiBtn.style.background = '';
+            }, 2000);
+        });
+    }
+
     if (saveSampleBtn) {
         saveSampleBtn.addEventListener('click', async () => {
             const template = sampleEmailInput.value.trim();
@@ -272,7 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         sample_email: sampleEmailInput ? sampleEmailInput.value : '',
                         txt_content: localStorage.getItem('txt_content') || '',
                         resume_text: localStorage.getItem('resume_text') || '',
-                        user_name: JSON.parse(localStorage.getItem('rolematch_user') || '{}').name || ''
+                        user_name: JSON.parse(localStorage.getItem('rolematch_user') || '{}').name || '',
+                        gemini_api_key: localStorage.getItem('gemini_api_key') || ''
                     })
                 });
 
