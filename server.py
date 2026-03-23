@@ -339,8 +339,8 @@ Additional instructions:
 TEXT TO ANALYZE:
 """
 
-    def call_ai(prompt_text, retries=3):
-        """Call OpenRouter API with JSON mode."""
+    def call_ai(prompt_text, retries=4):
+        """Call Gemini API with JSON mode."""
         import time
         for attempt in range(retries + 1):
             try:
@@ -359,14 +359,21 @@ TEXT TO ANALYZE:
                         "temperature": 0,
                         "messages": [{"role": "user", "content": prompt_text}],
                     },
-                    timeout=180,
+                    timeout=240,
                 )
                 
-                if resp.status_code == 429 and attempt < retries:
-                    wait = 10 * (attempt + 1)
-                    print(f"[Wait] Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
-                    time.sleep(wait)
-                    continue
+                if resp.status_code == 429:
+                    if attempt < retries:
+                        wait = 15 * (attempt + 1)
+                        print(f"[Wait] Rate limited. Waiting {wait}s before retry {attempt + 1}/{retries}...")
+                        time.sleep(wait)
+                        continue
+                    else:
+                        try:
+                            msg = resp.json().get('error', {}).get('message', '')
+                            raise Exception(f"Google Gemini Free Tier Limit Hit. Please wait a minute before analyzing again. ({msg})")
+                        except Exception as parse_e:
+                            raise Exception("Google Gemini Free Tier Rate Limit hit. Please wait a minute and try again.")
                     
                 resp.raise_for_status()
                 data = resp.json()
