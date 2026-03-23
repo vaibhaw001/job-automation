@@ -307,10 +307,15 @@ Strict JSON output schema:
       "job_type": "Internship" | "Full-time" | "Contract" | "Part-time" | "Unknown",
       "location": string,
       "skills": string or null,
-      "jd_summary": string,
-      "description": string,
-      "email_subject": string,
-      "email_body_draft": string
+      "jd_summary": string,         # 1-2 sentences summarizing role, tech stack, and expectations
+      "description": string,        # Important job details formatted as: 
+                                    # 📌 About Company: (brief company info if available)
+                                    # 💼 Key Responsibilities: (main tasks/duties)
+                                    # ✅ Requirements: (qualifications, experience needed)
+                                    # 💰 Compensation: (salary/stipend if mentioned)
+                                    # ⚠️ Important Points: (deadline, work hours, special notes, red flags if any)
+      "email_subject": string,      # Clear, professional subject, e.g., "Application for <Job Title> role"
+      "email_body_draft": string    # Polished email, max 2 short paragraphs + closing
     }}
   ]
 }}
@@ -326,8 +331,8 @@ Rules for `email_body_draft`:
 - Keep paragraphs short and readable
 - Do NOT exaggerate, invent skills, or fabricate experience
 - Ensure proper grammar and professional formatting
-- IMPORTANT: Use explicit `\n\n` characters to separate paragraphs.
-- IMPORTANT: Always add a blank line before the sign-off. The end of the email MUST look exactly like this: "\n\nYours sincerely,\n{user_name_display}"
+- IMPORTANT: Use explicit `\\n\\n` characters to separate paragraphs.
+- IMPORTANT: End email with "Yours sincerely," followed by the applicant's name: "{user_name_display}"
 
 Additional instructions:
 - Output JSON ONLY
