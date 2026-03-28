@@ -129,6 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('resume_name', data.resume_name || '');
             localStorage.setItem('resume_original_name', file.name || '');
 
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    localStorage.setItem('resume_base64', e.target.result);
+                } catch(err) {
+                    console.warn("Could not save base64 resume to localStorage (might be too large)", err);
+                }
+            };
+            reader.readAsDataURL(file);
+
             updateChip(resumeChip, true, 'Resume');
             updateContinueBtn();
 

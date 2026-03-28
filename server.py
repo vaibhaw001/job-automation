@@ -528,42 +528,60 @@ def send_email():
     msg.set_content(body)
 
     resume_path = data.get("resume_path", "").strip()
-    print(f"[DEBUG send-email] resume_path received: {repr(resume_path)}")
+    resume_base64 = data.get("resume_base64", "").strip()
+    resume_name = data.get("resume_original_name", "") or os.path.basename(resume_path) or "resume.pdf"
     
-    # Fallback: if path doesn't exist, try to find the most recent uploaded resume
-    if not resume_path or not os.path.exists(resume_path):
-        import glob as _glob
-        candidates = _glob.glob(os.path.join(UPLOAD_DIR, "resume_*.*"))
-        if candidates:
-            resume_path = max(candidates, key=os.path.getmtime)
-            print(f"[DEBUG send-email] Falling back to latest resume on disk: {resume_path}")
-        else:
-            print(f"[DEBUG send-email] No resume found in {UPLOAD_DIR}")
+    resume_data = None
 
-    if resume_path and os.path.exists(resume_path):
-        print(f"[DEBUG send-email] Attaching resume: {resume_path}")
-        with open(resume_path, 'rb') as f:
-            resume_data = f.read()
-            resume_name = data.get("resume_original_name", "") or os.path.basename(resume_path)
-            ext = resume_name.rsplit('.', 1)[-1].lower() if '.' in resume_name else 'pdf'
-            mime_map = {
-                'pdf': ('application', 'pdf'),
-                'docx': ('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document'),
-                'doc': ('application', 'msword'),
-                'txt': ('text', 'plain'),
-                'png': ('image', 'png'),
-                'jpg': ('image', 'jpeg'),
-                'jpeg': ('image', 'jpeg'),
-            }
-            maintype, subtype = mime_map.get(ext, ('application', 'octet-stream'))
-            msg.add_attachment(
-                resume_data,
-                maintype=maintype,
-                subtype=subtype,
-                filename=resume_name
-            )
+    if resume_base64:
+        import base64
+        print(f"[DEBUG send-email] Using base64 payload for attachment")
+        try:
+            # Handle data:application/pdf;base64,... format
+            if "," in resume_base64:
+                resume_base64 = resume_base64.split(",", 1)[1]
+            resume_data = base64.b64decode(resume_base64)
+        except Exception as e:
+            print(f"[DEBUG send-email] Base64 decode failed: {e}")
+
+    # Fallback: if no base64, try path on disk
+    if not resume_data:
+        if not resume_path or not os.path.exists(resume_path):
+            import glob as _glob
+            candidates = _glob.glob(os.path.join(UPLOAD_DIR, "resume_*.*"))
+            if candidates:
+                resume_path = max(candidates, key=os.path.getmtime)
+                print(f"[DEBUG send-email] Falling back to latest resume on disk: {resume_path}")
+            else:
+                print(f"[DEBUG send-email] No resume found in {UPLOAD_DIR}")
+
+        if resume_path and os.path.exists(resume_path):
+            print(f"[DEBUG send-email] Attaching resume from disk: {resume_path}")
+            with open(resume_path, 'rb') as f:
+                resume_data = f.read()
+                if not data.get("resume_original_name"):
+                    resume_name = os.path.basename(resume_path)
+    
+    if resume_data:
+        ext = resume_name.rsplit('.', 1)[-1].lower() if '.' in resume_name else 'pdf'
+        mime_map = {
+            'pdf': ('application', 'pdf'),
+            'docx': ('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document'),
+            'doc': ('application', 'msword'),
+            'txt': ('text', 'plain'),
+            'png': ('image', 'png'),
+            'jpg': ('image', 'jpeg'),
+            'jpeg': ('image', 'jpeg'),
+        }
+        maintype, subtype = mime_map.get(ext, ('application', 'octet-stream'))
+        msg.add_attachment(
+            resume_data,
+            maintype=maintype,
+            subtype=subtype,
+            filename=resume_name
+        )
     else:
-        print(f"[DEBUG send-email] Skipping attachment — file not found at: {repr(resume_path)}")
+        print(f"[DEBUG send-email] Skipping attachment — file not found or empty")
 
 
     try:

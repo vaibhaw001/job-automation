@@ -598,7 +598,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     sender_email: senderEmail || (senderEmailInput ? senderEmailInput.value : ''),
                     sender_password: senderPassword || (senderPassInput ? senderPassInput.value : ''),
                     resume_path: localStorage.getItem('resume_path') || '',
-                    resume_original_name: localStorage.getItem('resume_original_name') || ''
+                    resume_original_name: localStorage.getItem('resume_original_name') || '',
+                    resume_base64: localStorage.getItem('resume_base64') || ''
                 })
             });
             const result = await res.json();
