@@ -11,6 +11,9 @@ import smtplib
 import tempfile
 from datetime import datetime
 from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -521,11 +524,11 @@ def send_email():
     # Check if already sent (Handled by Supabase DB via Frontend)
 
     # Build email message
-    msg = EmailMessage()
+    msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["To"] = to_email
     msg["Subject"] = subject
-    msg.set_content(body)
+    msg.attach(MIMEText(body, "plain"))
 
     resume_path = data.get("resume_path", "").strip()
     resume_base64 = data.get("resume_base64", "").strip()
@@ -563,23 +566,10 @@ def send_email():
                     resume_name = os.path.basename(resume_path)
     
     if resume_data:
-        ext = resume_name.rsplit('.', 1)[-1].lower() if '.' in resume_name else 'pdf'
-        mime_map = {
-            'pdf': ('application', 'pdf'),
-            'docx': ('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document'),
-            'doc': ('application', 'msword'),
-            'txt': ('text', 'plain'),
-            'png': ('image', 'png'),
-            'jpg': ('image', 'jpeg'),
-            'jpeg': ('image', 'jpeg'),
-        }
-        maintype, subtype = mime_map.get(ext, ('application', 'octet-stream'))
-        msg.add_attachment(
-            resume_data,
-            maintype=maintype,
-            subtype=subtype,
-            filename=resume_name
-        )
+        print(f"[DEBUG send-email] Adding attachment: {resume_name}")
+        part = MIMEApplication(resume_data, Name=resume_name)
+        part['Content-Disposition'] = f'attachment; filename="{resume_name}"'
+        msg.attach(part)
     else:
         print(f"[DEBUG send-email] Skipping attachment — file not found or empty")
 
