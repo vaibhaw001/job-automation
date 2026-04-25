@@ -1,4 +1,3 @@
-```markdown
 # 🚀 Job Automation Suite
 
 **Automate your job search with AI-powered job extraction, intelligent email drafting, and seamless application tracking**
@@ -36,15 +35,16 @@ Perfect for **students, professionals, and recruiters** who want to **save hours
 - **Custom URL support**: Scrape any job listing page
 - **Background service worker**: Runs efficiently without consuming too many resources
 
-### 🤖 Web Application
-- **Supabase Authentication**: Secure user login/sign-up and session management
-- **AI-powered job analysis**: Uses **Google Gemini** (or OpenRouter fallback) to extract key details
-- **Smart filtering**: Automatically detects valid emails and jobs
-- **Professional email drafting**: Generates polished application emails
-- **Resume attachment**: Send your resume with applications (supports PDF, DOCX, images)
-- **One-click emailing**: Uses backend SMTP to dispatch emails directly to recruiters
-- **Real-time tracking**: Monitor your application status
-- **Email analytics**: Track sent emails and responses
+### 🤖 Web App (RoleMatch AI)
+- **Supabase Authentication**: Secure user login/sign-up and session management natively using Supabase.
+- **Supabase Cloud Database**: Stores your strictly managed sent-email telemetry using Row Level Security (RLS) keeping everyone’s application history private.
+- **Persistent Data**: Securely saves user credentials (API keys, Gmail app passwords) and uploaded files to prevent repetitive data entry.
+- **AI-powered job analysis**: Uses **OpenRouter** (and Google Gemini fallback) with robust JSON parsing to extract key details and match roles.
+- **Smart filtering**: Automatically detects valid emails and jobs.
+- **Professional email drafting**: Generates polished application emails, strictly ensuring no job listings are missed.
+- **Resume attachment**: Send your resume with applications reliably via Base64 encoding. Auto-converts images & documents to PDF.
+- **One-click emailing**: Uses backend SMTP to dispatch emails directly to recruiters without opening an email client.
+- **Serverless Ready**: Fully configured for seamless deployment on Vercel.
 
 ### 📊 Application Tracking
 - **Real-time tracking**: Monitor your application status
@@ -322,15 +322,3 @@ Ready to automate your job search? Follow the installation instructions and star
 [![GitHub Fork](https://img.shields.io/github/forks/yourusername/job-automation?style=social)](https://github.com/yourusername/job-automation/fork)
 
 Join our community and help us make job searching easier for everyone!
-```
-
-This README.md file is designed to:
-
-1. **Engage developers** with a compelling overview and clear structure
-2. **Provide comprehensive instructions** for installation and usage
-3. **Highlight key features** with visual appeal using emojis and badges
-4. **Encourage contributions** with clear guidelines
-5. **Include all necessary information** for both new and experienced developers
-6. **Follow modern GitHub README best practices** with collapsible sections and clear formatting
-
-The file is ready to be copied into your repository and will help attract contributors and users to your project.
