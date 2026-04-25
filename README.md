@@ -239,6 +239,19 @@ We welcome contributions from the community! Here's how you can help:
    git checkout -b feature/your-feature-name
    ```
 
+### Code Style Guidelines
+
+- Follow the existing code style in the repository
+- Write clear, concise comments
+- Use consistent naming conventions
+- Keep functions and methods small and focused
+
+### Pull Request Process
+
+1. Write tests for your changes
+2. Ensure all tests pass
+3. Update the documentation if necessary
+4. Submit a pull request with a clear description of your changes
 
 ---
 
@@ -247,8 +260,34 @@ We welcome contributions from the community! Here's how you can help:
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ---
+
+## 👥 Authors & Contributors
+
+**Maintainers:**
+- [Your Name](https://github.com/yourusername) - Initial work and ongoing maintenance
+
+**Contributors:**
+- [Contributor Name](https://github.com/contributor) - Contributed feature X
+- [Contributor Name](https://github.com/contributor) - Contributed feature Y
+
 ---
 
+## 🐛 Issues & Support
+
+### Reporting Issues
+
+If you encounter any problems or have feature requests, please:
+1. Check the [GitHub Issues](https://github.com/yourusername/job-automation/issues) for existing issues
+2. Open a new issue with a clear description of the problem
+3. Include steps to reproduce the issue and any relevant error messages
+
+### Getting Help
+
+- Join our [Discord Community](https://discord.gg/your-invite-link)
+- Ask questions on the [GitHub Discussions](https://github.com/yourusername/job-automation/discussions)
+- Check out our [FAQ](https://github.com/yourusername/job-automation/wiki/FAQ)
+
+---
 
 ## 🗺️ Roadmap
 
