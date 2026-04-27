@@ -148,6 +148,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const savedFullName = fullName || (authData && authData.user && authData.user.user_metadata ? authData.user.user_metadata.full_name : '');
 
+            // Clear any previously saved data to ensure a fresh session
+            const keysToRemove = [
+                'txt_content', 'txt_name', 'txt_chars', 'txt_filename', 'txt_char_count',
+                'analyzed_jobs', 
+                'resume_text', 'resume_path', 'resume_name', 'resume_original_name', 'resume_base64',
+                'rolematch_gmail_email', 'rolematch_gmail_pass', 'gemini_api_key'
+            ];
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+
             // Store login state + credentials for Gmail sending
             localStorage.setItem('rolematch_user', JSON.stringify({
                 name: savedFullName,
