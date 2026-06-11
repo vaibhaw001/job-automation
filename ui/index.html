@@ -406,6 +406,112 @@
             text-align: center;
         }
 
+        /* ── Extension Section ── */
+        .extension-section {
+            margin-top: 5rem;
+            width: 100%;
+            max-width: 900px; /* slightly narrower for readability */
+        }
+
+        .extension-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .extension-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .ext-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ext-icon {
+            font-size: 2.5rem;
+        }
+
+        .ext-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .ext-description {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .ext-download-container {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .ext-download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid var(--accent-primary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .ext-download-btn:hover {
+            background: var(--accent-primary);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-glow);
+        }
+
+        .ext-instructions {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-secondary);
+        }
+
+        .ext-instructions h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .ext-instructions ol {
+            color: var(--text-secondary);
+            padding-left: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .ext-instructions li {
+            margin-bottom: 0.5rem;
+        }
+
+        .ext-instructions code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #e2e8f0;
+        }
+
         /* ── Call to action ── */
         .cta-container {
             margin-top: 4rem;
@@ -533,6 +639,33 @@
                         <img src="assets/jobs_screenshot.png" alt="Analyzed Jobs Dashboard" class="screenshot-img">
                     </div>
                     <h3>Job Dashboard</h3>
+                </div>
+            </div>
+        <!-- Extension Section -->
+        <div class="extension-section">
+            <div class="extension-card">
+                <div class="ext-header">
+                    <div class="ext-icon">🧩</div>
+                    <h2>Get the RoleMatch AI Chrome Extension</h2>
+                </div>
+                <p class="ext-description">
+                    The RoleMatch AI Chrome extension makes it incredibly easy to scrape job descriptions directly from LinkedIn, Internshala, Naukri, or any other job portal. It instantly generates the clean <code>.txt</code> job scrape file required by the dashboard for analysis.
+                </p>
+                <div class="ext-download-container">
+                    <a href="assets/rolematch-extension.zip" download class="ext-download-btn">
+                        📥 Download Extension (v2)
+                    </a>
+                </div>
+                
+                <div class="ext-instructions">
+                    <h3>How to install in Google Chrome:</h3>
+                    <ol>
+                        <li><strong>Download</strong> the <code>rolematch-extension.zip</code> file using the button above and <strong>extract (unzip)</strong> it to a folder on your computer.</li>
+                        <li>Open Google Chrome and navigate to <code>chrome://extensions/</code> in your address bar.</li>
+                        <li>Toggle on <strong>Developer mode</strong> in the top right corner.</li>
+                        <li>Click the <strong>Load unpacked</strong> button in the top left.</li>
+                        <li>Select the folder where you extracted the extension. That's it!</li>
+                    </ol>
                 </div>
             </div>
         </div>
