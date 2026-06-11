@@ -20,16 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Settings panel
     const settingsToggle = document.getElementById('settingsToggle');
     const settingsPanel = document.getElementById('settingsPanel');
-    const senderEmailInput = document.getElementById('senderEmail');
-    const senderPassInput = document.getElementById('senderAppPassword');
-    const saveCredsBtn = document.getElementById('saveCredsBtn');
-
-    const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
-    const saveApiBtn = document.getElementById('saveApiBtn');
-
-    const sampleEmailInput = document.getElementById('sampleEmailTemplate');
-    const saveSampleBtn = document.getElementById('saveSampleBtn');
-
     // Analyze
     const analyzeBtn = document.getElementById('analyzeBtn');
     const analyzeStatus = document.getElementById('analyzeStatus');
@@ -111,16 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedAppPass = localStorage.getItem('rolematch_gmail_pass') || '';
         if (savedGmail) {
             senderEmail = savedGmail;
-            if (senderEmailInput) senderEmailInput.value = senderEmail;
         }
         if (savedAppPass) {
             senderPassword = savedAppPass;
-            if (senderPassInput) senderPassInput.value = senderPassword;
         }
 
-        if (geminiApiKeyInput) {
-            geminiApiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
-        }
+
 
         // Try to load existing jobs from local storage
         const savedJobs = localStorage.getItem('analyzed_jobs');
@@ -195,86 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadTracker();
 
-    if (saveCredsBtn) {
-        saveCredsBtn.addEventListener('click', async () => {
-            senderEmail = senderEmailInput.value.trim();
-            senderPassword = senderPassInput.value.trim();
 
-            if (!senderEmail || !senderPassword) {
-                saveCredsBtn.textContent = '⚠️ Fill both fields';
-                setTimeout(() => { saveCredsBtn.textContent = '💾 Save Credentials'; }, 2000);
-                return;
-            }
-
-            // Save Gmail Credentials securely locally
-            localStorage.setItem('rolematch_gmail_email', senderEmail);
-            localStorage.setItem('rolematch_gmail_pass', senderPassword);
-
-            const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
-            const userFullName = savedUser.name || '';
-
-            try {
-                const res = await fetch(`${API_BASE}/api/credentials`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: senderEmail, app_password: senderPassword, full_name: userFullName })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    saveCredsBtn.textContent = '✓ Saved!';
-                    saveCredsBtn.style.background = 'linear-gradient(135deg, #059669, #34d399)';
-                    setTimeout(() => {
-                        saveCredsBtn.textContent = '💾 Save Credentials';
-                        saveCredsBtn.style.background = '';
-                    }, 2000);
-                }
-            } catch (e) {
-                saveCredsBtn.textContent = '❌ Server error';
-                setTimeout(() => { saveCredsBtn.textContent = '💾 Save Credentials'; }, 2000);
-            }
-        });
-    }
-
-    if (saveApiBtn) {
-        saveApiBtn.addEventListener('click', () => {
-            const val = geminiApiKeyInput.value.trim();
-            localStorage.setItem('gemini_api_key', val);
-            saveApiBtn.textContent = '✓ Saved!';
-            saveApiBtn.style.background = 'linear-gradient(135deg, #059669, #34d399)';
-            setTimeout(() => {
-                saveApiBtn.textContent = '💾 Save API Key';
-                saveApiBtn.style.background = '';
-            }, 2000);
-        });
-    }
-
-    if (saveSampleBtn) {
-        saveSampleBtn.addEventListener('click', async () => {
-            const template = sampleEmailInput.value.trim();
-            if (!template) {
-                saveSampleBtn.textContent = '⚠️ Enter a template';
-                setTimeout(() => { saveSampleBtn.textContent = '💾 Save Template'; }, 2000);
-                return;
-            }
-
-            try {
-                await fetch(`${API_BASE}/api/sample-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ template })
-                });
-                saveSampleBtn.textContent = '✓ Saved!';
-                saveSampleBtn.style.background = 'linear-gradient(135deg, #059669, #34d399)';
-                setTimeout(() => {
-                    saveSampleBtn.textContent = '💾 Save Template';
-                    saveSampleBtn.style.background = '';
-                }, 2000);
-            } catch (e) {
-                saveSampleBtn.textContent = '❌ Server error';
-                setTimeout(() => { saveSampleBtn.textContent = '💾 Save Template'; }, 2000);
-            }
-        });
-    }
 
     // ──────────────────────────────
     // ANALYZE WITH AI
@@ -294,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        sample_email: sampleEmailInput ? sampleEmailInput.value : '',
+                        sample_email: localStorage.getItem('rolematch_sample_email') || '',
                         txt_content: localStorage.getItem('txt_content') || '',
                         resume_text: localStorage.getItem('resume_text') || '',
                         user_name: JSON.parse(localStorage.getItem('rolematch_user') || '{}').name || '',
@@ -595,8 +502,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...payload,
-                    sender_email: senderEmail || (senderEmailInput ? senderEmailInput.value : ''),
-                    sender_password: senderPassword || (senderPassInput ? senderPassInput.value : ''),
+                    sender_email: senderEmail || '',
+                    sender_password: senderPassword || '',
                     resume_path: localStorage.getItem('resume_path') || '',
                     resume_original_name: localStorage.getItem('resume_original_name') || '',
                     resume_base64: localStorage.getItem('resume_base64') || ''

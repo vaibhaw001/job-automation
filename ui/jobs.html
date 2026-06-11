@@ -1174,57 +1174,6 @@
         <!-- ── Settings Panel ── -->
         <div class="settings-panel" id="settingsPanel">
 
-            <!-- 1. Gmail Credentials -->
-            <div class="accordion" id="accCreds">
-                <div class="accordion-header">
-                    <h3>📧 Gmail Credentials</h3>
-                    <span class="accordion-arrow">▼</span>
-                </div>
-                <div class="accordion-body">
-                    <div class="settings-field">
-                        <label for="senderEmail">Sender Gmail</label>
-                        <input type="email" id="senderEmail" placeholder="yourname@gmail.com">
-                    </div>
-                    <div class="settings-field">
-                        <label for="senderAppPassword">App Password</label>
-                        <input type="password" id="senderAppPassword" placeholder="16-character app password">
-                    </div>
-                    <button class="settings-btn" id="saveCredsBtn">💾 Save Credentials</button>
-                </div>
-            </div>
-
-            <!-- 2. AI API Key -->
-            <div class="accordion" id="accApi">
-                <div class="accordion-header">
-                    <h3>🔑 AI API Key</h3>
-                    <span class="accordion-arrow">▼</span>
-                </div>
-                <div class="accordion-body">
-                    <div class="settings-field">
-                        <label for="geminiApiKeyInput">Enter your Gemini API key</label>
-                        <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy...">
-                    </div>
-                    <button class="settings-btn" id="saveApiBtn">💾 Save API Key</button>
-                    <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.4;">This key is exclusively used to power the AI job analysis.</p>
-                </div>
-            </div>
-
-            <!-- 3. Mail Template -->
-            <div class="accordion" id="accTemplate">
-                <div class="accordion-header">
-                    <h3>✉️ Mail Template</h3>
-                    <span class="accordion-arrow">▼</span>
-                </div>
-                <div class="accordion-body">
-                    <div class="settings-field">
-                        <label for="sampleEmailTemplate">AI will mirror this style</label>
-                        <textarea id="sampleEmailTemplate"
-                            placeholder="Paste a sample email here. AI will use its tone and structure when drafting application emails for each job."></textarea>
-                    </div>
-                    <button class="settings-btn" id="saveSampleBtn">💾 Save Template</button>
-                </div>
-            </div>
-
             <!-- 3. Applied (Tracker) -->
             <div class="accordion" id="accApplied">
                 <div class="accordion-header">

@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await delay(800);
 
-            // Redirect to upload page
-            window.location.href = 'upload.html';
+            // Redirect to credentials page
+            window.location.href = 'credentials.html';
 
         } catch (err) {
             showError('Cannot connect to server. Make sure the backend is running.');
