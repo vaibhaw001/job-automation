@@ -2,9 +2,9 @@
 
 **Automate your job search with AI-powered job extraction, intelligent email drafting, and seamless application tracking**
 
-![GitHub Stars](https://img.shields.io/github/stars/yourusername/job-automation?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/yourusername/job-automation?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/yourusername/job-automation)
+![GitHub Stars](https://img.shields.io/github/stars/vaibhaw001/job-automation?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/vaibhaw001/job-automation?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/vaibhaw001/job-automation)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-2.0%2B-green.svg)
@@ -86,7 +86,7 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/job-automation.git
+   git clone https://github.com/vaibhaw001/job-automation.git
    cd job-automation
    ```
 
@@ -267,7 +267,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 👥 Authors & Contributors
 
 **Maintainers:**
-- [Your Name](https://github.com/yourusername) - Initial work and ongoing maintenance
+- [Vaibhaw](https://github.com/vaibhaw001) - Initial work and ongoing maintenance
 
 **Contributors:**
 - [Contributor Name](https://github.com/contributor) - Contributed feature X
@@ -280,15 +280,15 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ### Reporting Issues
 
 If you encounter any problems or have feature requests, please:
-1. Check the [GitHub Issues](https://github.com/yourusername/job-automation/issues) for existing issues
+1. Check the [GitHub Issues](https://github.com/vaibhaw001/job-automation/issues) for existing issues
 2. Open a new issue with a clear description of the problem
 3. Include steps to reproduce the issue and any relevant error messages
 
 ### Getting Help
 
 - Join our [Discord Community](https://discord.gg/your-invite-link)
-- Ask questions on the [GitHub Discussions](https://github.com/yourusername/job-automation/discussions)
-- Check out our [FAQ](https://github.com/yourusername/job-automation/wiki/FAQ)
+- Ask questions on the [GitHub Discussions](https://github.com/vaibhaw001/job-automation/discussions)
+- Check out our [FAQ](https://github.com/vaibhaw001/job-automation/wiki/FAQ)
 
 ---
 
@@ -321,7 +321,7 @@ If you encounter any problems or have feature requests, please:
 
 Ready to automate your job search? Follow the installation instructions and start saving hours of manual work today!
 
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/job-automation?style=social)](https://github.com/yourusername/job-automation/stargazers)
-[![GitHub Fork](https://img.shields.io/github/forks/yourusername/job-automation?style=social)](https://github.com/yourusername/job-automation/fork)
+[![GitHub Stars](https://img.shields.io/github/stars/vaibhaw001/job-automation?style=social)](https://github.com/vaibhaw001/job-automation/stargazers)
+[![GitHub Fork](https://img.shields.io/github/forks/vaibhaw001/job-automation?style=social)](https://github.com/vaibhaw001/job-automation/fork)
 
 Join our community and help us make job searching easier for everyone!
