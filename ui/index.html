@@ -316,6 +316,72 @@
             line-height: 1.5;
         }
 
+        /* ── Screenshots Section ── */
+        .screenshots-section {
+            margin-top: 5rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 2.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .screenshot-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .screenshot-card:hover {
+            border-color: var(--accent-secondary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+
+        .screenshot-wrapper {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed var(--text-muted);
+        }
+
+        .placeholder-img {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .screenshot-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
         /* ── Call to action ── */
         .cta-container {
             margin-top: 4rem;
@@ -410,6 +476,44 @@
                 <div class="stat-icon">🏆</div>
                 <div class="stat-value">30%</div>
                 <div class="stat-label">Have landed more than 5 internships</div>
+            </div>
+        </div>
+
+        <!-- App Screenshots Section -->
+        <div class="screenshots-section">
+            <h2 class="section-title">See it in action</h2>
+            <div class="screenshots-grid">
+                <div class="screenshot-card">
+                    <div class="screenshot-wrapper">
+                        <!-- Placeholder for Login Screenshot -->
+                        <div class="placeholder-img">Login / Sign Up</div>
+                    </div>
+                    <h3>Secure Login</h3>
+                </div>
+                
+                <div class="screenshot-card">
+                    <div class="screenshot-wrapper">
+                        <!-- Placeholder for Credentials Screenshot -->
+                        <div class="placeholder-img">Credentials Setup</div>
+                    </div>
+                    <h3>One-time Setup</h3>
+                </div>
+
+                <div class="screenshot-card">
+                    <div class="screenshot-wrapper">
+                        <!-- Placeholder for Upload Screenshot -->
+                        <div class="placeholder-img">Upload Resume</div>
+                    </div>
+                    <h3>Smart Uploads</h3>
+                </div>
+
+                <div class="screenshot-card">
+                    <div class="screenshot-wrapper">
+                        <!-- Placeholder for Jobs Screenshot -->
+                        <div class="placeholder-img">Analyzed Jobs</div>
+                    </div>
+                    <h3>Job Dashboard</h3>
+                </div>
             </div>
         </div>
 
