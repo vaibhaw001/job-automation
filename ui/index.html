@@ -408,7 +408,7 @@
 
         /* ── Extension Section ── */
         .extension-section {
-            margin-top: 5rem;
+            margin: 5rem auto 0;
             width: 100%;
             max-width: 900px; /* slightly narrower for readability */
         }
@@ -421,6 +421,7 @@
             border-radius: 16px;
             padding: 2.5rem;
             transition: all 0.3s ease;
+            text-align: center;
         }
 
         .extension-card:hover {
@@ -431,6 +432,7 @@
         .ext-header {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
@@ -482,9 +484,12 @@
 
         .ext-instructions {
             background: rgba(0, 0, 0, 0.2);
-            padding: 1.5rem;
+            padding: 1.5rem 2rem;
             border-radius: 8px;
             border-left: 4px solid var(--accent-secondary);
+            text-align: left;
+            display: inline-block;
+            max-width: 100%;
         }
 
         .ext-instructions h3 {
