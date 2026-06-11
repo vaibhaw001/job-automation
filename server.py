@@ -61,8 +61,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # =========================
 
 @app.route('/')
-def serve_login():
-    return send_from_directory('ui', 'login.html')
+def serve_index():
+    return send_from_directory('ui', 'index.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
