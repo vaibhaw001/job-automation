@@ -135,10 +135,11 @@ Before you begin, ensure you have the following installed:
 #### Web Application
 1. Access the web application at `http://localhost:5000`
 2. Sign in or create an account using Supabase authentication
-3. Upload your resume (PDF, DOCX, or image)
-4. Upload your job scrape file (`.txt` from Chrome extension)
-5. Analyze jobs using AI to extract key details
-6. Draft and send application emails directly to recruiters
+3. Set up your automated email credentials (Gmail, App Password) and Gemini API Key in the Setup Credentials step
+4. Upload your resume (PDF, DOCX, or image)
+5. Upload your job scrape file (`.txt` from Chrome extension)
+6. Analyze jobs using AI to extract key details
+7. Draft and send application emails directly to recruiters
 
 ### Advanced Usage
 
@@ -179,6 +180,8 @@ job-automation/
 │   ├── jobs.js                 # Job dashboard logic
 │   ├── login.html              # Login page
 │   ├── login.js                # Login logic
+│   ├── credentials.html        # Credentials setup page
+│   ├── credentials.js          # Credentials setup logic
 │   ├── upload.html             # File upload page
 │   ├── upload.js               # File upload logic
 │   └── supabase_init.js        # Supabase initialization
