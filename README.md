@@ -16,7 +16,7 @@
 
 Job Automation Suite is a **powerful, all-in-one solution** for job seekers who want to **eliminate manual work** from their job search process. This project combines:
 
-- **Chrome Extension**: Scrape job listings from multiple platforms (LinkedIn, Internshala, Indeed, Naukri) with customizable scan durations
+- **Chrome Extension**: Scrape job listings from multiple platforms like linkedin with customizable scan durations
 - **Web Application**: AI-powered job analysis, email drafting, and application tracking
 - **Multi-format Resume Support**: Process PDFs, DOCX files, and images
 - **Secure Cloud Storage**: Store all your job data and application history in Supabase
