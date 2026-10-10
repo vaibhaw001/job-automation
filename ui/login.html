@@ -795,14 +795,18 @@
         /* --- Custom Job Page Overrides --- */
         
         /* 1. Details Popup (Background Light Blue, Text Dark Blue) */
-        .details-popup {
-            background-color: #e0f2fe !important; /* Light blue background */
+        .details-popup, .skills-popup {
+            background-color: #e0f2fe !important;
             border: 2px solid #0a66c2 !important;
             box-shadow: 4px 4px 0px #0a66c2 !important;
         }
+        .skill-tag {
+            background: rgba(10, 102, 194, 0.1) !important;
+            border: 1px solid rgba(10, 102, 194, 0.3) !important;
+        }
         
-        .details-popup *, .details-popup-title, .details-popup-text {
-            color: #0a66c2 !important; /* Blue text */
+        .details-popup *, .details-popup-title, .details-popup-text, .skills-popup *, .skill-tag {
+            color: #0a66c2 !important;
             -webkit-text-fill-color: #0a66c2 !important;
         }
         
