@@ -230,9 +230,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resumeFile && !sessionStorage.getItem('resume_prompt_shown')) {
             sessionStorage.setItem('resume_prompt_shown', 'true');
             if (confirm("Do you want to save the resume for upcoming job search?")) {
-                // Keep in localStorage
+                const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
+                if (savedUser.email) {
+                    let userData = JSON.parse(localStorage.getItem('user_data_' + savedUser.email) || '{}');
+                    userData.resume_text = localStorage.getItem('resume_text');
+                    userData.resume_path = localStorage.getItem('resume_path');
+                    userData.resume_name = localStorage.getItem('resume_name');
+                    userData.resume_original_name = localStorage.getItem('resume_original_name');
+                    userData.resume_base64 = localStorage.getItem('resume_base64');
+                    localStorage.setItem('user_data_' + savedUser.email, JSON.stringify(userData));
+                }
             } else {
-                // Move to sessionStorage so it doesn't persist, but still works for this session
                 const rText = localStorage.getItem('resume_text');
                 const rPath = localStorage.getItem('resume_path');
                 const rName = localStorage.getItem('resume_name');

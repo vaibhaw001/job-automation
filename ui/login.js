@@ -166,6 +166,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 timestamp: Date.now()
             }));
 
+            // --- Multi-User Restore Logic ---
+            const userData = JSON.parse(localStorage.getItem('user_data_' + email) || '{}');
+            if (userData.gmail_email) localStorage.setItem('rolematch_gmail_email', userData.gmail_email);
+            if (userData.gmail_pass) localStorage.setItem('rolematch_gmail_pass', userData.gmail_pass);
+            if (userData.gemini_key) localStorage.setItem('gemini_api_key', userData.gemini_key);
+            if (userData.resume_text) {
+                localStorage.setItem('resume_text', userData.resume_text);
+                localStorage.setItem('resume_original_name', userData.resume_original_name || '');
+                localStorage.setItem('resume_path', userData.resume_path || '');
+                localStorage.setItem('resume_name', userData.resume_name || '');
+                if (userData.resume_base64) localStorage.setItem('resume_base64', userData.resume_base64);
+            }
+
+
             // Also save credentials to server session for email sending
             await fetch(`${API_BASE}/api/credentials`, {
                 method: 'POST',

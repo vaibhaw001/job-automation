@@ -37,6 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('rolematch_gmail_email', senderEmail);
                     localStorage.setItem('rolematch_gmail_pass', senderPassword);
                     localStorage.setItem('gemini_api_key', geminiKey);
+                    
+                    const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
+                    if (savedUser.email) {
+                        let userData = JSON.parse(localStorage.getItem('user_data_' + savedUser.email) || '{}');
+                        userData.gmail_email = senderEmail;
+                        userData.gmail_pass = senderPassword;
+                        userData.gemini_key = geminiKey;
+                        localStorage.setItem('user_data_' + savedUser.email, JSON.stringify(userData));
+                    }
+
                     try {
                         await fetch(API_BASE + '/api/credentials', {
                             method: 'POST',
@@ -83,8 +93,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save to localStorage
         localStorage.setItem('rolematch_gmail_email', senderEmail);
         localStorage.setItem('rolematch_gmail_pass', senderPassword);
+        
         localStorage.setItem('gemini_api_key', geminiKey);
         localStorage.setItem('rolematch_sample_email', template);
+
+        const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
+        if (savedUser.email) {
+            let userData = JSON.parse(localStorage.getItem('user_data_' + savedUser.email) || '{}');
+            userData.gmail_email = senderEmail;
+            userData.gmail_pass = senderPassword;
+            userData.gemini_key = geminiKey;
+            localStorage.setItem('user_data_' + savedUser.email, JSON.stringify(userData));
+        }
+
 
         const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
         const userFullName = savedUser.name || '';
