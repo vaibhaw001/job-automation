@@ -107,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        const savedUser = JSON.parse(localStorage.getItem('rolematch_user') || '{}');
         const userFullName = savedUser.name || '';
 
         try {
