@@ -876,12 +876,87 @@
             fill: #000000 !important;
         }
 
+    
+        /* --- Custom Job Page Overrides --- */
+        
+        /* 1. Details Popup (Background Light Blue, Text Dark Blue) */
+        .details-popup {
+            background-color: #e0f2fe !important; /* Light blue background */
+            border: 2px solid #0a66c2 !important;
+            box-shadow: 4px 4px 0px #0a66c2 !important;
+        }
+        
+        .details-popup *, .details-popup-title, .details-popup-text {
+            color: #0a66c2 !important; /* Blue text */
+            -webkit-text-fill-color: #0a66c2 !important;
+        }
+        
+        .details-popup-title {
+            border-bottom: 2px solid rgba(10, 102, 194, 0.2) !important;
+        }
+
+        /* 2. Header Links Box in White with Blue Text */
+        .dash-header .nav-links, .navbar-nav {
+            background-color: #ffffff !important;
+            border: 2px solid #000000 !important;
+            border-radius: 8px !important;
+            padding: 0.25rem !important;
+            box-shadow: 2px 2px 0px rgba(0,0,0,1) !important;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-pill {
+            color: #0a66c2 !important;
+            -webkit-text-fill-color: #0a66c2 !important;
+            background-color: transparent !important;
+            font-weight: bold !important;
+        }
+        
+        .nav-pill:hover, .nav-pill.active {
+            background-color: #e0f2fe !important;
+            color: #0a66c2 !important;
+            -webkit-text-fill-color: #0a66c2 !important;
+            border-color: transparent !important;
+            border-radius: 6px !important;
+        }
+
+    
+        /* --- Global Back Button Styles --- */
+        .global-back-btn {
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border: 2px solid #ffffff !important;
+            padding: 10px 20px !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            text-decoration: none !important;
+            z-index: 10000 !important;
+            box-shadow: 2px 2px 0px rgba(255,255,255,1) !important;
+            transition: all 0.2s !important;
+            cursor: pointer !important;
+        }
+        .global-back-btn:hover {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            border: 2px solid #000000 !important;
+            box-shadow: 2px 2px 0px rgba(0,0,0,1) !important;
+        }
+
     </style>
 
     
 </head>
 
 <body>
+    <!-- Global Back Button -->
+    <a href="javascript:history.back()" class="global-back-btn">⬅ Back</a>
+
 
     <!-- Background effects -->
     <div class="bg-grid"></div>
