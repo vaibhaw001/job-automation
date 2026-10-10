@@ -155,14 +155,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+    
     // --- Prompt Save Logic ---
     document.querySelectorAll('a').forEach(a => {
         a.addEventListener('click', (e) => {
             const href = a.getAttribute('href');
-            if (href && href !== '#' && !a.id.includes('logoutBtn')) {
-                if (confirm("Do you want to save your credentials before leaving?")) {
-                    e.preventDefault();
+            const isLogout = a.id && a.id.includes('logoutBtn');
+            
+            if ((href && href !== '#') || isLogout) {
+                const msg = isLogout 
+                    ? "Do you want to save the app password and the api before logging out?" 
+                    : "Do you want to save your credentials before leaving?";
+                    
+                if (confirm(msg)) {
                     document.getElementById('saveContinueBtn').click();
+                    if (isLogout) {
+                        e.preventDefault();
+                    }
                 }
             }
         });

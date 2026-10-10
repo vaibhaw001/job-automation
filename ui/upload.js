@@ -383,15 +383,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+    
     // --- Prompt Save Logic ---
     document.querySelectorAll('a').forEach(a => {
         a.addEventListener('click', (e) => {
             const href = a.getAttribute('href');
-            if (href && href !== '#' && !a.id.includes('logoutBtn')) {
-                if (confirm("Do you want to save your uploaded data before leaving?")) {
-                    e.preventDefault();
-                    const analyzeBtn = document.getElementById('analyzeBtn');
-                    if(analyzeBtn) analyzeBtn.click();
+            const isLogout = a.id && a.id.includes('logoutBtn');
+            
+            if ((href && href !== '#') || isLogout) {
+                const msg = isLogout 
+                    ? "Do you want to save the resume before logging out?" 
+                    : "Do you want to save your uploaded data before leaving?";
+                    
+                if (confirm(msg)) {
+                    const continueBtn = document.getElementById('continueBtn');
+                    if (continueBtn) continueBtn.click();
+                    
+                    if (isLogout) {
+                        e.preventDefault();
+                    }
                 }
             }
         });
