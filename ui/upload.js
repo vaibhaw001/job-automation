@@ -381,3 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+
+    // --- Prompt Save Logic ---
+    document.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            const href = a.getAttribute('href');
+            if (href && href !== '#' && !a.id.includes('logoutBtn')) {
+                if (confirm("Do you want to save your uploaded data before leaving?")) {
+                    e.preventDefault();
+                    const analyzeBtn = document.getElementById('analyzeBtn');
+                    if(analyzeBtn) analyzeBtn.click();
+                }
+            }
+        });
+    });

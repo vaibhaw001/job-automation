@@ -153,3 +153,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+
+    // --- Prompt Save Logic ---
+    document.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            const href = a.getAttribute('href');
+            if (href && href !== '#' && !a.id.includes('logoutBtn')) {
+                if (confirm("Do you want to save your credentials before leaving?")) {
+                    e.preventDefault();
+                    document.getElementById('saveContinueBtn').click();
+                }
+            }
+        });
+    });
