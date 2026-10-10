@@ -227,12 +227,37 @@ document.addEventListener('DOMContentLoaded', () => {
     continueBtn.addEventListener('click', async () => {
         if (!resumeFile && !txtFile) return;
 
+        if (resumeFile && !sessionStorage.getItem('resume_prompt_shown')) {
+            sessionStorage.setItem('resume_prompt_shown', 'true');
+            if (confirm("Do you want to save the resume for upcoming job search?")) {
+                // Keep in localStorage
+            } else {
+                // Move to sessionStorage so it doesn't persist, but still works for this session
+                const rText = localStorage.getItem('resume_text');
+                const rPath = localStorage.getItem('resume_path');
+                const rName = localStorage.getItem('resume_name');
+                const rOrig = localStorage.getItem('resume_original_name');
+                const rBase = localStorage.getItem('resume_base64');
+                
+                if (rText) sessionStorage.setItem('resume_text', rText);
+                if (rPath) sessionStorage.setItem('resume_path', rPath);
+                if (rName) sessionStorage.setItem('resume_name', rName);
+                if (rOrig) sessionStorage.setItem('resume_original_name', rOrig);
+                if (rBase) sessionStorage.setItem('resume_base64', rBase);
+                
+                localStorage.removeItem('resume_text');
+                localStorage.removeItem('resume_path');
+                localStorage.removeItem('resume_name');
+                localStorage.removeItem('resume_original_name');
+                localStorage.removeItem('resume_base64');
+            }
+        }
+
         continueBtn.classList.add('loading');
         continueBtn.disabled = true;
 
         await delay(500);
 
-        // Navigate to jobs page
         window.location.href = 'jobs.html';
     });
 
@@ -245,8 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             // If resume already uploaded in this session, show it
-            if (localStorage.getItem('resume_text') && localStorage.getItem('resume_original_name')) {
-                const rName = localStorage.getItem('resume_original_name');
+            if ((localStorage.getItem('resume_text') && localStorage.getItem('resume_original_name')) || (sessionStorage.getItem('resume_text') && sessionStorage.getItem('resume_original_name'))) {
+                const rName = localStorage.getItem('resume_original_name') || sessionStorage.getItem('resume_original_name');
                 resumeFileName.textContent = rName;
                 resumeFileSize.textContent = 'Previously uploaded';
                 resumePreview.classList.add('visible');
@@ -384,25 +409,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    // --- Prompt Save Logic ---
-    document.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', (e) => {
-            const href = a.getAttribute('href');
-            const isLogout = a.id && a.id.includes('logoutBtn');
-            
-            if ((href && href !== '#') || isLogout) {
-                const msg = isLogout 
-                    ? "Do you want to save the resume before logging out?" 
-                    : "Do you want to save your uploaded data before leaving?";
-                    
-                if (confirm(msg)) {
-                    const continueBtn = document.getElementById('continueBtn');
-                    if (continueBtn) continueBtn.click();
-                    
-                    if (isLogout) {
-                        e.preventDefault();
-                    }
-                }
-            }
-        });
-    });
+    

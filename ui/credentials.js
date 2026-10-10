@@ -21,23 +21,42 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSavedCredentials();
 
     // ── Logout ──
+
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async (e) => {
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+        newLogoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
+            
+            const senderEmail = senderEmailInput.value.trim();
+            const senderPassword = senderPassInput.value.trim();
+            const geminiKey = geminiApiKeyInput.value.trim();
+            
+            if (senderEmail || senderPassword || geminiKey) {
+                if (confirm("Do you want to save the app password and the api before logging out?")) {
+                    localStorage.setItem('rolematch_gmail_email', senderEmail);
+                    localStorage.setItem('rolematch_gmail_pass', senderPassword);
+                    localStorage.setItem('gemini_api_key', geminiKey);
+                    try {
+                        await fetch(API_BASE + '/api/credentials', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: senderEmail, app_password: senderPassword })
+                        });
+                    } catch(err) {}
+                }
+            }
+
             try {
-                // Call backend logout
-                await fetch(`${API_BASE}/api/logout`, { method: 'POST' });
+                await fetch(API_BASE + '/api/logout', { method: 'POST' });
             } catch (err) { }
-            // Clear local application state (txt and jobs ONLY, keep resume)
+            
             localStorage.removeItem('txt_content');
             localStorage.removeItem('txt_name');
             localStorage.removeItem('txt_chars');
             localStorage.removeItem('analyzed_jobs');
-            
-            // Clear auth but KEEP AI Key, Gmail Creds, and Resume
             localStorage.removeItem('rolematch_user');
             
-            // Sign out of Supabase
             if (window.sbClient) {
                 await window.sbClient.auth.signOut();
             }
@@ -156,23 +175,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    // --- Prompt Save Logic ---
-    document.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', (e) => {
-            const href = a.getAttribute('href');
-            const isLogout = a.id && a.id.includes('logoutBtn');
-            
-            if ((href && href !== '#') || isLogout) {
-                const msg = isLogout 
-                    ? "Do you want to save the app password and the api before logging out?" 
-                    : "Do you want to save your credentials before leaving?";
-                    
-                if (confirm(msg)) {
-                    document.getElementById('saveContinueBtn').click();
-                    if (isLogout) {
-                        e.preventDefault();
-                    }
-                }
-            }
-        });
-    });
+    

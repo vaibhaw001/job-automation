@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         sample_email: localStorage.getItem('rolematch_sample_email') || '',
                         txt_content: localStorage.getItem('txt_content') || '',
-                        resume_text: localStorage.getItem('resume_text') || '',
+                        resume_text: localStorage.getItem('resume_text') || sessionStorage.getItem('resume_text') || '',
                         user_name: JSON.parse(localStorage.getItem('rolematch_user') || '{}').name || '',
                         gemini_api_key: localStorage.getItem('gemini_api_key') || ''
                     })
@@ -504,9 +504,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ...payload,
                     sender_email: senderEmail || '',
                     sender_password: senderPassword || '',
-                    resume_path: localStorage.getItem('resume_path') || '',
-                    resume_original_name: localStorage.getItem('resume_original_name') || '',
-                    resume_base64: localStorage.getItem('resume_base64') || ''
+                    resume_path: localStorage.getItem('resume_path') || sessionStorage.getItem('resume_path') || '',
+                    resume_original_name: localStorage.getItem('resume_original_name') || sessionStorage.getItem('resume_original_name') || '',
+                    resume_base64: localStorage.getItem('resume_base64') || sessionStorage.getItem('resume_base64') || ''
                 })
             });
             const result = await res.json();
