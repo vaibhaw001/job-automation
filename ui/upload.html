@@ -7,8 +7,7 @@
     <title>Upload Files – RoleMatch AI</title>
     <meta name="description"
         content="Upload your resume and job scrape files to RoleMatch AI for automated job matching and outreach.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
@@ -671,6 +670,98 @@
                 align-items: flex-start;
             }
         }
+    
+        /* --- LinkedIn Light Theme Overrides --- */
+        :root {
+            --bg-primary: #f3f2ef !important;
+            --bg-card: #ffffff !important;
+            --border-subtle: #dce6f1 !important;
+            --border-focus: #0a66c2 !important;
+            --accent-primary: #0a66c2 !important;
+            --accent-secondary: #004182 !important;
+            --accent-glow: rgba(10, 102, 194, 0.2) !important;
+            --text-primary: rgba(0, 0, 0, 0.9) !important;
+            --text-secondary: rgba(0, 0, 0, 0.6) !important;
+            --text-muted: rgba(0, 0, 0, 0.55) !important;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Fira Sans', Ubuntu, Oxygen, 'Oxygen Sans', Cantarell, 'Droid Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Lucida Grande', Helvetica, Arial, sans-serif !important;
+            background: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Hide dark mode bg effects */
+        .bg-grid, .bg-orb, .particles {
+            display: none !important;
+        }
+
+        /* Fix text colors */
+        .hero-title, .stat-value, .section-title, .form-title {
+            background: none !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .social-bar, .login-btn-top, .extension-card, .step-card, .stat-box, .screenshot-card, .card, .auth-card {
+            background: var(--bg-card) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .social-bar-link:hover, .btn-secondary:hover {
+            background: rgba(0,0,0,0.05) !important;
+            color: var(--accent-primary) !important;
+        }
+        
+        .social-bar-link {
+            color: var(--text-secondary) !important;
+        }
+
+        .app-footer {
+            background: #ffffff !important;
+            border-top: 1px solid var(--border-subtle) !important;
+        }
+
+        .ext-instructions, .step-list code, .ext-instructions code, .code-block, input, textarea, select {
+            background: #ffffff !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-subtle) !important;
+        }
+        
+        /* Specific input focus for LinkedIn */
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--border-focus) !important;
+            box-shadow: 0 0 0 1px var(--border-focus) !important;
+        }
+
+        .cta-btn, .btn-primary, button.primary {
+            background: var(--accent-primary) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .cta-btn:hover, .btn-primary:hover, button.primary:hover {
+            background: var(--accent-secondary) !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .nav-brand span {
+            background: var(--accent-primary) !important;
+            color: #ffffff !important;
+        }
+        
+        .step-number {
+            background: var(--accent-primary) !important;
+            color: #ffffff !important;
+        }
+        
+        .step-icon, .stat-icon, .ext-icon {
+            color: var(--accent-primary) !important;
+        }
+
     </style>
 </head>
 
