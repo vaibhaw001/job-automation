@@ -786,98 +786,214 @@
             margin-bottom: 2rem;
         }
     
-        /* --- LinkedIn Light Theme Overrides --- */
+        
+        
+        
+        
+        /* --- Reversed Blue/Black/White Theme Overrides --- */
         :root {
-            --bg-primary: #f3f2ef !important;
-            --bg-card: #ffffff !important;
-            --border-subtle: #dce6f1 !important;
-            --border-focus: #0a66c2 !important;
-            --accent-primary: #0a66c2 !important;
-            --accent-secondary: #004182 !important;
-            --accent-glow: rgba(10, 102, 194, 0.2) !important;
-            --text-primary: rgba(0, 0, 0, 0.9) !important;
-            --text-secondary: rgba(0, 0, 0, 0.6) !important;
-            --text-muted: rgba(0, 0, 0, 0.55) !important;
+            --bg-primary: #0a66c2 !important; /* Deep Blue Background */
+            --bg-card: #ffffff !important; /* White Cards */
+            --bg-input: #ffffff !important;
+            --bg-row: #ffffff !important;
+            --bg-row-hover: #f1f5f9 !important;
+            
+            --border-subtle: #000000 !important; /* Black Borders */
+            --border-focus: #000000 !important;
+            
+            --accent-primary: #000000 !important; /* Black accents / buttons */
+            --accent-secondary: #333333 !important;
+            --accent-glow: transparent !important;
+            
+            --text-primary: #000000 !important; /* Black Text inside cards */
+            --text-secondary: #000000 !important;
+            --text-muted: #333333 !important;
         }
 
         body {
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Fira Sans', Ubuntu, Oxygen, 'Oxygen Sans', Cantarell, 'Droid Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Lucida Grande', Helvetica, Arial, sans-serif !important;
-            background: var(--bg-primary) !important;
-            color: var(--text-primary) !important;
+            background-color: var(--bg-primary) !important;
+            color: #ffffff !important; /* Default to white text on blue background */
         }
 
-        /* Hide dark mode bg effects */
+        /* Hide the dark mode space theme background elements */
         .bg-grid, .bg-orb, .particles {
             display: none !important;
         }
 
-        /* Fix text colors */
-        .hero-title, .stat-value, .section-title, .form-title {
-            background: none !important;
-            -webkit-text-fill-color: var(--text-primary) !important;
-            color: var(--text-primary) !important;
-        }
-
-        .social-bar, .login-btn-top, .extension-card, .step-card, .stat-box, .screenshot-card, .card, .auth-card {
-            background: var(--bg-card) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
-            border: 1px solid var(--border-subtle) !important;
-        }
-
-        .social-bar-link:hover, .btn-secondary:hover {
-            background: rgba(0,0,0,0.05) !important;
-            color: var(--accent-primary) !important;
-        }
-        
-        .social-bar-link {
-            color: var(--text-secondary) !important;
-        }
-
-        .app-footer {
-            background: #ffffff !important;
-            border-top: 1px solid var(--border-subtle) !important;
-        }
-
-        .ext-instructions, .step-list code, .ext-instructions code, .code-block, input, textarea, select {
-            background: #ffffff !important;
-            color: var(--text-primary) !important;
-            border: 1px solid var(--border-subtle) !important;
-        }
-        
-        /* Specific input focus for LinkedIn */
-        input:focus, textarea:focus, select:focus {
-            border-color: var(--border-focus) !important;
-            box-shadow: 0 0 0 1px var(--border-focus) !important;
-        }
-
-        .cta-btn, .btn-primary, button.primary {
-            background: var(--accent-primary) !important;
+        /* Ensure outer text is white on the blue background */
+        .hero-title, .hero-subtitle, .section-title, .dash-header h1, .nav-brand, .ext-description, .footer-content p, .footer-content h3 {
             color: #ffffff !important;
+            background: none !important;
+            -webkit-text-fill-color: #ffffff !important;
+            text-shadow: none !important;
+        }
+
+        /* Navbar & Footer */
+        .navbar, .app-footer {
+            background-color: #000000 !important; /* Black header/footer looks sharp */
+            border: none !important;
+            color: #ffffff !important;
+        }
+        
+        .navbar .nav-brand, .navbar .nav-brand span {
+            color: #ffffff !important;
+            background: transparent !important;
+        }
+
+        /* Cards and containers - White with Black text */
+        .stat-box, .screenshot-card, .extension-card, .step-card, .card, .auth-card, .stat-card {
+            background-color: var(--bg-card) !important;
+            border: 2px solid #000000 !important;
+            border-radius: 8px !important;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5) !important; /* Sharp solid shadow */
+            color: #000000 !important;
+        }
+        
+        /* Dashboard wrapper */
+        .dashboard {
+            background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
         }
-        
-        .cta-btn:hover, .btn-primary:hover, button.primary:hover {
-            background: var(--accent-secondary) !important;
-            transform: none !important;
-            box-shadow: none !important;
+
+        .stat-box:hover, .screenshot-card:hover, .extension-card:hover, .step-card:hover {
+            transform: translate(-2px, -2px) !important;
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5) !important;
+            border-color: #000000 !important;
         }
-        
-        .nav-brand span {
-            background: var(--accent-primary) !important;
+
+        /* Forces all text inside cards to be black */
+        .stat-box *, .screenshot-card *, .extension-card *, .step-card *, .card *, .auth-card *, .stat-card * {
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+        }
+
+        /* Exception: Buttons inside cards should be black with white text */
+        .cta-btn, .btn-primary, button.primary, .send-btn, .ext-download-btn, .login-btn-top {
+            background-color: #000000 !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border: 2px solid #000000 !important;
+            border-radius: 6px !important;
+            font-weight: bold !important;
         }
         
-        .step-number {
-            background: var(--accent-primary) !important;
+        .cta-btn *, .btn-primary *, button.primary *, .send-btn *, .ext-download-btn *, .login-btn-top * {
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
         
-        .step-icon, .stat-icon, .ext-icon {
-            color: var(--accent-primary) !important;
+        .cta-btn:hover, .btn-primary:hover, button.primary:hover, .send-btn:hover, .ext-download-btn:hover, .login-btn-top:hover {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+        }
+        
+        .cta-btn:hover *, .btn-primary:hover *, button.primary:hover *, .send-btn:hover *, .ext-download-btn:hover *, .login-btn-top:hover * {
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+        }
+
+        /* Inputs & Forms */
+        input, textarea, select {
+            background-color: #ffffff !important;
+            border: 2px solid #000000 !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            border-radius: 4px !important;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: #000000 !important;
+            box-shadow: 2px 2px 0px #000000 !important;
+            outline: none !important;
+        }
+
+        /* Tables */
+        table, th, td {
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            background-color: #ffffff !important;
+        }
+        
+        th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
+        }
+        
+        tr:hover td {
+            background-color: #f1f5f9 !important;
+        }
+
+        /* Code blocks / instructions */
+        .ext-instructions, .step-list code, .ext-instructions code, .code-block {
+            background: #f1f5f9 !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            border: 1px solid #000000 !important;
+        }
+        
+        /* Number icons and badges */
+        .step-number, .brand-icon {
+            background: #000000 !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border: 2px solid #ffffff !important;
+        }
+
+    
+        /* --- Fix for Footer Hover Effects --- */
+        .app-footer .social-bar-link, .app-footer .btn-secondary {
+            border: 2px solid #ffffff !important;
+        }
+        
+        .app-footer .social-bar-link:hover, .app-footer .btn-secondary:hover {
+            background-color: #333333 !important; /* Dark gray instead of pitch black so it's visible on black footer */
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+        
+        .social-bar-link:hover, .btn-secondary:hover {
+            /* General fix if they are outside the footer */
+            border-color: #000000 !important; 
+        }
+        
+        /* Make sure SVG icons inside the links also invert correctly */
+        .social-bar-link:hover svg, .btn-secondary:hover svg {
+            color: inherit !important;
+            fill: currentColor !important;
+        }
+
+    
+        /* --- Social Links Blue/White/Black Theme --- */
+        .social-bar-link, .app-footer .social-bar-link {
+            background-color: #0a66c2 !important; /* LinkedIn Blue */
+            color: #ffffff !important; /* White text */
+            border: 2px solid #0a66c2 !important; /* Blue border to match */
+        }
+        
+        /* Ensure SVGs inside the link inherit the white color */
+        .social-bar-link *, .app-footer .social-bar-link * {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+        }
+        
+        .social-bar-link:hover, .app-footer .social-bar-link:hover {
+            background-color: #ffffff !important; /* Turns white on hover */
+            color: #000000 !important; /* Text turns black */
+            border-color: #ffffff !important; /* Border turns white */
+        }
+        
+        /* Ensure SVGs inside the link inherit the black color on hover */
+        .social-bar-link:hover *, .app-footer .social-bar-link:hover * {
+            color: #000000 !important;
+            fill: #000000 !important;
         }
 
     </style>
+
+    
 </head>
 
 <body>
